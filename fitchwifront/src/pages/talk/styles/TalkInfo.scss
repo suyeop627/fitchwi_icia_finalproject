@@ -1,0 +1,72 @@
+@media screen and (max-width:1300px) {
+    .talkSection {
+        margin: 0 9rem;
+    }
+}
+
+@media screen and (max-width:800px) {
+    .talkDetailBox {
+        margin: 1rem 10rem;
+    }
+}
+
+.talkSection {
+    margin: 0 4rem;
+}
+
+.talkTxtLine {
+    line-height: 3rem;
+    margin-top: 1rem;
+}
+
+.hrColumn {
+    border-left: 4px solid #fd5089;
+}
+
+.talkMenu {
+    float: right;
+}
+
+.modalCloseBtn {
+    float: right;
+    border: none;
+    color: rgba(0, 0, 0, 0.7);
+    background-color: transparent;
+    font-size: 20px;
+}
+
+.modalCloseBtn:hover {
+    cursor: pointer;
+}
+
+#talkToInfo {
+    position: sticky;
+    top: 65px;
+    z-index: 10;
+}
+
+.talkSticky {
+    position: sticky !important;
+    bottom: 0;
+    width: 100%;
+    background-color: #FF0456 !important;
+    color: white !important;
+}
+
+.reportBtn {
+    background-color: orange !important;
+    color: white;
+    margin: 0.5rem;
+    border-radius: 5px;
+}
+
+.reportBtn:hover {
+    background-color:  rgb(217, 141, 0) !important;
+}
+
+.subTopBar {
+    text-decoration: none;
+    color: white;
+    margin: 6.5rem;
+    line-height: 50px;
+}

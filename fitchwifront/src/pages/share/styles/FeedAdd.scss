@@ -1,0 +1,15 @@
+#multiple-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 2px;
+    text-align: center;
+}
+
+// 이미지 크기
+.image {
+    display: block;
+    width: 100%;
+    border-radius: 5px;
+}
