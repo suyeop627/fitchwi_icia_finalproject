@@ -37,7 +37,7 @@ function App() {
     const profileImg = sessionStorage.getItem("profileImg");
     const mbti = sessionStorage.getItem("mbti");
     ChannelService.boot({
-      pluginKey: "261174a2-5819-4674-be05-d9bb582cd3b9",
+      pluginKey: "fd5d508e-cd29-47c6-bef9-76dd87ce2f1a",
       memberId: id,
       profile: {
         name: nickName,

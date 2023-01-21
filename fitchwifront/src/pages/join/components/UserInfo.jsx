@@ -109,7 +109,7 @@ export default function UserInfo({ onChange, joinForm, setJoinForm, isKakao, swA
           swAlert("이미 등록된 전화번호입니다.", "warning");
         } else {
           const { IMP } = window;
-          // IMP.init("imp51345423");
+          // IMP.init("imp87001512");
 
           IMP.init("imp10391932");
 

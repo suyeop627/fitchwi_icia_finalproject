@@ -157,8 +157,8 @@ public class TogetherService {
                 headers.setContentType(MediaType.APPLICATION_JSON);
 
                 Map<String, String> body = new HashMap<>();
-                body.put("imp_key", "5177641603268324");
-                body.put("imp_secret", "8ECw03mlg2rRO9qJmHaWsQIiWGQDakmEkO9WvMaGV29EY01MWWt2AlQXr6A3Gu0VIEtFSMfVQaAReVf1");
+                body.put("imp_key", "5006385281232120");
+                body.put("imp_secret", "igoeLXDYzN3fLC7aXpSvZQPbaXr1V2zK0cwd3zUGQoOuCiJF6x8a5LFRYOvhTgw56M8sQJBQYrQIoSdl");
                 try {
                     HttpEntity<Map> tokenEntity = new HttpEntity<>(body, headers);
                     ResponseEntity<Map> token = restTemplate.postForEntity("https://api.iamport.kr/users/getToken", tokenEntity, Map.class);
@@ -210,8 +210,8 @@ public class TogetherService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String,String> body = new HashMap<>();
-        body.put("imp_key", "5177641603268324");
-        body.put("imp_secret", "8ECw03mlg2rRO9qJmHaWsQIiWGQDakmEkO9WvMaGV29EY01MWWt2AlQXr6A3Gu0VIEtFSMfVQaAReVf1");
+        body.put("imp_key", "5006385281232120");
+        body.put("imp_secret", "igoeLXDYzN3fLC7aXpSvZQPbaXr1V2zK0cwd3zUGQoOuCiJF6x8a5LFRYOvhTgw56M8sQJBQYrQIoSdl");
         HttpEntity<Map> tokenEntity = new HttpEntity<>(body,headers);
         ResponseEntity<Map> token = restTemplate.postForEntity("https://api.iamport.kr/users/getToken",tokenEntity,Map.class);
         ObjectMapper mapper = new ObjectMapper();
@@ -441,8 +441,8 @@ public class TogetherService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String,String> body = new HashMap<>();
-            body.put("imp_key", "5177641603268324");
-            body.put("imp_secret", "8ECw03mlg2rRO9qJmHaWsQIiWGQDakmEkO9WvMaGV29EY01MWWt2AlQXr6A3Gu0VIEtFSMfVQaAReVf1");
+            body.put("imp_key", "5006385281232120");
+            body.put("imp_secret", "igoeLXDYzN3fLC7aXpSvZQPbaXr1V2zK0cwd3zUGQoOuCiJF6x8a5LFRYOvhTgw56M8sQJBQYrQIoSdl");
         try {
             HttpEntity<Map> tokenEntity = new HttpEntity<>(body,headers);
             ResponseEntity<Map> token = restTemplate.postForEntity("https://api.iamport.kr/users/getToken",tokenEntity,Map.class);
@@ -575,8 +575,8 @@ public class TogetherService {
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String,String> body = new HashMap<>();
-        body.put("imp_key", "5177641603268324");
-        body.put("imp_secret", "8ECw03mlg2rRO9qJmHaWsQIiWGQDakmEkO9WvMaGV29EY01MWWt2AlQXr6A3Gu0VIEtFSMfVQaAReVf1");
+        body.put("imp_key", "5006385281232120");
+        body.put("imp_secret", "igoeLXDYzN3fLC7aXpSvZQPbaXr1V2zK0cwd3zUGQoOuCiJF6x8a5LFRYOvhTgw56M8sQJBQYrQIoSdl");
 
         try {
             HttpEntity<Map> tokenEntity = new HttpEntity<>(body,headers);

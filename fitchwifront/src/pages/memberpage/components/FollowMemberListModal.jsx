@@ -17,6 +17,7 @@ const style = {
   p: 4,
 };
 
+
 export default function FollowMemberListModal({ children, followList, lstate }) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
