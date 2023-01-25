@@ -117,11 +117,7 @@ public class TogetherController {
         return togetherService.getTogetherJoinListByMember(memberEmail);
     }
 
-    @GetMapping("/getMemberTogether")
-    public Map<String, Object> getMemberTogether(@RequestParam String memberEmail){
-        log.info("getMemberTogether()");
-        return togetherService.getMemberTogether(memberEmail);
-    }
+
 
 
     @GetMapping("/getTogetherCancelRequestList")
@@ -134,5 +130,15 @@ public class TogetherController {
     public Iterable<TogetherTag> getAllTogetherTag() {
         log.info("getAllTogetherTag()");
         return togetherService.getAllTogetherTag();
+    }
+
+
+
+
+
+    @GetMapping("/getMemberTogether")
+    public Map<String, Object> getMemberTogether(@RequestParam String memberEmail){
+        log.info("getMemberTogether()");
+        return togetherService.getMemberTogether(memberEmail);
     }
 }

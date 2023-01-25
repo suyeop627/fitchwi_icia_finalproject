@@ -38,6 +38,125 @@ public class TalkService {
     @Autowired
     private FeedFileRepository feedFileRepository;
 
+
+
+
+//회원이 가입한 talkJoin 목록 조회
+    public List<TalkJoin> getTalkJoinListByMember(String memberEmail) {
+        log.info("talkService.getTalkJoinListByMember()");
+        List<TalkJoin> talkJoinList = null;
+
+        try {
+            //회원 아이디로 회원 정보 조회
+            Member member = memberRepository.findById(memberEmail).get();
+            //해당 회원의 가입 테이블 목록 조회
+            talkJoinList = talkJoinRepository.findAllByMemberEmail(member);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return talkJoinList;
+    }
+    //회원이 개설한 talkOpen 목록 조회
+    public List<TalkOpened> getTalkOpenedListByMember(String memberEmail) {
+        log.info("talkService.getTalkJoinListByMember()");
+        List<TalkOpened> talkOpenedList = null;
+
+        try {
+            //회원아이디로 회원 정보 조회
+            Member member = memberRepository.findById(memberEmail).get();
+            //해당 회원의 개설 테이블 목록 조회
+            talkOpenedList = talkOpenedRepository.findAllByMemberEmail(member);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return talkOpenedList;
+
+    }
+//회원이 관련된 얘기해요 조회(가입중, 운영중)
+    public Map<String, Object> getMemberTalk(String memberEmail) {
+        Map<String, Object> talkMap = new HashMap<>();
+        try{
+            //회원이 가입한 talkJoin 목록 조회
+            List<TalkJoin> talkJoinListByMember = getTalkJoinListByMember(memberEmail);
+
+            //가입한 얘기해요가 있다면, 외래키인 각 talkCode(talk)의 가입자 수를 새서 저장.(각 얘기해요의 회원수 출력 목적)
+            if(!(talkJoinListByMember.isEmpty())) {
+                for (TalkJoin tj : talkJoinListByMember) {
+                    Talk talk = tj.getTalkCode();
+                    talk.setTalkMemberCount(talkJoinRepository.countByTalkCodeAndTalkJoinStateContains(talk,"가입중"));
+
+                }
+            }
+
+            List<Talk> talkListWithMemberCount = new ArrayList<>();
+            //회원이 개설한 얘기해요 조회
+            List<TalkOpened> talkOpenedListByMember = getTalkOpenedListByMember(memberEmail);
+            if(!talkOpenedListByMember.isEmpty()) {
+                //개설한 얘기해요가 있다면, talkOpenCode를 가진 talk를 조회후 회원 수 저장
+                for (TalkOpened to : talkOpenedListByMember) {
+                    Talk   talk = talkRepository.findByTalkOpenCode(to);
+                    talk.setTalkMemberCount(talkJoinRepository.countByTalkCodeAndTalkJoinStateContains(talk,"가입중"));
+
+                    //반환할 talkList에 저장
+                    talkListWithMemberCount.add(talk);
+                }
+            }
+            //talkJoin에서 talk가 조회 가능하지만, talkOpen에서는 talk가 조회 불가능(talkOpen이 talk의 부모테이블이므로.)
+            //talkOpen(부모) - talk (자식)
+            // talk(부모) - talkJoin(자식)
+
+            talkMap.put("talkJoinList", talkJoinListByMember);
+            talkMap.put("talkOpenedList", talkListWithMemberCount);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        System.out.println("talkMap = " + talkMap);
+        return talkMap;
+    }
+
+
+
+//특정 회원의 얘기해요 관련 정보 전체 삭제
+    public void deleteAllByMember(Member member, HttpSession session){
+        //가입중인 talkJoin 삭제
+        List<TalkJoin> talkJoinListByMember = getTalkJoinListByMember(member.getMemberEmail());
+        if(!(talkJoinListByMember.isEmpty())){
+            talkJoinRepository.deleteAll(talkJoinListByMember);
+        }
+        //운영중 - talk, talkOpen 등 삭제
+        List<Talk> talkList =new ArrayList<>();
+
+        List<TalkOpened> talkOpenedListByMember = getTalkOpenedListByMember(member.getMemberEmail());
+        if(!(talkOpenedListByMember.isEmpty())){
+            for(TalkOpened talkOpen : talkOpenedListByMember){
+                talkList.add(talkRepository.findByTalkOpenCode(talkOpen));
+            }
+
+            for(Talk talk : talkList){
+                deleteTalk(talk, session);
+            }
+        }
+    }
+
+
+    ////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public String addTalk(Talk newTalk, TalkTag talkTag , MultipartFile pic, HttpSession session) {
         log.info("talkService.addTalk");
         String result = null;
@@ -301,68 +420,7 @@ public class TalkService {
         return result;
     }
 
-    public List<TalkJoin> getTalkJoinListByMember(String memberEmail) {
-        log.info("talkService.getTalkJoinListByMember()");
-        List<TalkJoin> talkJoinList = null;
 
-        try {
-            Member member = memberRepository.findById(memberEmail).get();
-            talkJoinList = talkJoinRepository.findAllByMemberEmail(member);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return talkJoinList;
-    }
-    public List<TalkOpened> getTalkOpenedListByMember(String memberEmail) {
-        log.info("talkService.getTalkJoinListByMember()");
-        List<TalkOpened> talkOpenedList = null;
-
-        try {
-            Member member = memberRepository.findById(memberEmail).get();
-            talkOpenedList = talkOpenedRepository.findAllByMemberEmail(member);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return talkOpenedList;
-
-    }
-
-        public Map<String, Object> getMemberTalk(String memberEmail) {
-            Map<String, Object> talkMap = new HashMap<>();
-        try{
-
-            List<TalkJoin> talkJoinListByMember = getTalkJoinListByMember(memberEmail);
-
-
-            if(!(talkJoinListByMember.isEmpty())) {
-                for (TalkJoin tj : talkJoinListByMember) {
-                    Talk talk = tj.getTalkCode();
-                    talk.setTalkMemberCount(talkJoinRepository.countByTalkCodeAndTalkJoinStateContains(talk,"가입중"));
-
-                }
-            }
-
-            List<Talk> talkListWithMemberCount = new ArrayList<>();
-
-            List<TalkOpened> talkOpenedListByMember = getTalkOpenedListByMember(memberEmail);
-            if(!talkOpenedListByMember.isEmpty()) {
-                for (TalkOpened to : talkOpenedListByMember) {
-                 Talk   talk = talkRepository.findByTalkOpenCode(to);
-                 talk.setTalkMemberCount(talkJoinRepository.countByTalkCodeAndTalkJoinStateContains(talk,"가입중"));
-
-
-                 talkListWithMemberCount.add(talk);
-                }
-            }
-
-            talkMap.put("talkJoinList", talkJoinListByMember);
-            talkMap.put("talkOpenedList", talkListWithMemberCount);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-            System.out.println("talkMap = " + talkMap);
-        return talkMap;
-    }
 
     public Talk getTalk(long talkCode) {
         log.info("talkService.getTalk()");
@@ -389,26 +447,6 @@ public class TalkService {
         return talkList;
     }
 
-    public void deleteAllByMember(Member member, HttpSession session){
-        //가입중
-        List<TalkJoin> talkJoinListByMember = getTalkJoinListByMember(member.getMemberEmail());
-        if(!(talkJoinListByMember.isEmpty())){
-            talkJoinRepository.deleteAll(talkJoinListByMember);
-        }
-      //운영중
-        List<Talk> talkList =new ArrayList<>();
-
-        List<TalkOpened> talkOpenedListByMember = getTalkOpenedListByMember(member.getMemberEmail());
-        if(!(talkOpenedListByMember.isEmpty())){
-            for(TalkOpened talkOpen : talkOpenedListByMember){
-                talkList.add(talkRepository.findByTalkOpenCode(talkOpen));
-        }
-
-        for(Talk talk : talkList){
-            deleteTalk(talk, session);
-        }
-        }
-    }
 
     public List<Feed> getFeedListByTalk(Long feedClassificationcode) {
         log.info("talkService.getFeedListByTalk()");
@@ -425,4 +463,6 @@ public class TalkService {
         }
         return talkFeedList;
     }
+
+
 }

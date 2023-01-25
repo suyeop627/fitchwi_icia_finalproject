@@ -53,6 +53,122 @@ public class TogetherService {
     NodayRepository nodayRepository;
 
 
+    //회원이 가입한 togetherJoin 목록 조회
+    public List<TogetherJoin> getTogetherJoinListByMember(String memberEmail) {
+        log.info("togetherService.getTogetherJoinListByMember()");
+        List<TogetherJoin> togetherList = null;
+
+        try {
+            //회원 아이디로 회원 정보 조회
+            Member member = memberRepository.findById(memberEmail).get();
+            //해당 회원의 가입 테이블 목록 조회
+            togetherList = togetherJoinRepository.findAllByMemberEmail(member);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return togetherList;
+    }
+    //회원이 개설한 togetherOpen 목록 조회
+    public List<TogetherOpened> getTogetherOpenedListByMember(String memberEmail) {
+        log.info("togetherService.getTogetherOpenedListByMember()");
+        List<TogetherOpened> togetherOpenedList = null;
+
+        try {
+            //회원아이디로 회원 정보 조회
+            Member member = memberRepository.findById(memberEmail).get();
+            //해당 회원의 개설 테이블 목록 조회
+            togetherOpenedList = togetherOpenedRepository.findAllByMemberEmail(member);
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return togetherOpenedList;
+
+    }
+    //회원이 관련된 함께해요 조회(가입중, 운영중)
+    public Map<String, Object> getMemberTogether(String memberEmail) {
+        log.info("togetherService.getMemberTogether()");
+        Map<String, Object> togetherMap = new HashMap<>();
+        try{
+            //회원이 가입한 together 목록 조회
+            List<TogetherJoin> togetherJoinListByMember = getTogetherJoinListByMember(memberEmail);
+            //가입한 함께해요가 있다면, 외래키인 각 togetherCode(together)의 가입자 수를 새서 저장.(각 함께해요의 회원수 출력 목적)
+            if(!(togetherJoinListByMember.isEmpty())){
+                for(TogetherJoin tj : togetherJoinListByMember){
+                    Together together = tj.getTogetherCode();
+                    together.setTogetherMemberCount(togetherJoinRepository.countByTogetherCodeAndTogetherJoinStateContains(together, "가입중"));
+                }
+            }
+            List<Together> togetherListWithMemberCount = new ArrayList<>();
+
+            //회원이 개설한 함께해요 조회
+            List<TogetherOpened> togetherOpenedListByMember = getTogetherOpenedListByMember(memberEmail);
+            //개설한 함께해요가 있다면, togetherOpenCode를 가진 together를 조회후 회원 수 저장
+            if(!(togetherOpenedListByMember.isEmpty())){
+                for(TogetherOpened to : togetherOpenedListByMember){
+                    Together together = togetherRepository.findBytogetherOpenedCode(to);
+                    together.setTogetherMemberCount(togetherJoinRepository.countByTogetherCodeAndTogetherJoinStateContains(together,"가입중"));
+                    //반환할 togetherList에 저장
+                    togetherListWithMemberCount.add(together);
+                }
+            }
+
+            //togetherJoin에서 together가 조회 가능하지만, togetherOpen에서는 together가 조회 불가능(togetherOpen이 together의 부모테이블이므로.)
+            //togetherOpen(부모) - together (자식)
+            // together(부모) - togetherJoin(자식)
+            togetherMap.put("togetherJoinList", togetherJoinListByMember);
+            togetherMap.put("togetherOpenedList", togetherListWithMemberCount);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        return togetherMap;
+    }
+//회원 정보 삭제시, 삭제 가능여부 판단.(진행 예정인 함께해요가 존재할 경우, 탈퇴 불가)
+    public boolean isAvailableToDeleteMember(Member member){
+
+        //개설한 함께해요가 있을 경우 -탈퇴 불가
+        List<TogetherOpened> togetherOpenedListByMember = getTogetherOpenedListByMember(member.getMemberEmail());
+        if(!togetherOpenedListByMember.isEmpty()){
+            return  false;
+        }
+
+
+        //참여중인 함께해요가 있을 경우 - 탈퇴불가 / togetherJoinState가  '거절' 일 경우는 해당 값 지우면서 탈퇴 가능
+        List<TogetherJoin> togetherJoinListByMember = getTogetherJoinListByMember(member.getMemberEmail());
+
+        List<TogetherJoin> rejectedTogetherJoinList = new ArrayList<>();
+
+
+        if(!togetherJoinListByMember.isEmpty()){
+            for(TogetherJoin tj : togetherJoinListByMember){
+                if(tj.getTogetherJoinState().equals("거절")){
+                    rejectedTogetherJoinList.add(tj);
+                }else{
+                    return false;
+                }
+            }
+            try{
+                togetherJoinRepository.deleteAll(rejectedTogetherJoinList);
+            } catch (Exception e){
+                e.printStackTrace();
+                return false;
+            }
+        }
+        return true;
+    }
+
+    ///////////////////////////////////////////////////////////////////////
+
+
+
+
+
+
+
+
+
+
+
 
     public String addTogetherOpened(TogetherOpened togetherOpened, Together together, TogetherTag togetherTag, MultipartFile pic, HttpSession session) {
         String result = null;
@@ -632,102 +748,7 @@ public class TogetherService {
         return togetherList;
     }
 
-    public List<TogetherJoin> getTogetherJoinListByMember(String memberEmail) {
-        log.info("togetherService.getTogetherJoinListByMember()");
-        List<TogetherJoin> togetherList = null;
 
-        try {
-            Member member = memberRepository.findById(memberEmail).get();
-            togetherList = togetherJoinRepository.findAllByMemberEmail(member);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return togetherList;
-    }
-
-    public List<TogetherOpened> getTogetherOpenedListByMember(String memberEmail) {
-        log.info("togetherService.getTogetherOpenedListByMember()");
-        List<TogetherOpened> togetherOpenedList = null;
-
-        try {
-            Member member = memberRepository.findById(memberEmail).get();
-            togetherOpenedList = togetherOpenedRepository.findAllByMemberEmail(member);
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        return togetherOpenedList;
-
-    }
-
-    public Map<String, Object> getMemberTogether(String memberEmail) {
-        log.info("togetherService.getMemberTogether()");
-        Map<String, Object> togetherMap = new HashMap<>();
-        try{
-            List<TogetherJoin> togetherJoinListByMember = getTogetherJoinListByMember(memberEmail);
-            if(!(togetherJoinListByMember.isEmpty())){
-                for(TogetherJoin tj : togetherJoinListByMember){
-                    Together together = tj.getTogetherCode();
-                    together.setTogetherMemberCount(togetherJoinRepository.countByTogetherCodeAndTogetherJoinStateContains(together, "가입중"));
-                }
-            }
-            List<Together> togetherListWithMemberCount = new ArrayList<>();
-
-
-            List<TogetherOpened> togetherOpenedListByMember = getTogetherOpenedListByMember(memberEmail);
-            if(!(togetherOpenedListByMember.isEmpty())){
-                for(TogetherOpened to : togetherOpenedListByMember){
-                    Together together = togetherRepository.findBytogetherOpenedCode(to);
-                    together.setTogetherMemberCount(togetherJoinRepository.countByTogetherCodeAndTogetherJoinStateContains(together,"가입중"));
-                    togetherListWithMemberCount.add(together);
-                }
-            }
-
-
-            togetherMap.put("togetherJoinList", togetherJoinListByMember);
-            togetherMap.put("togetherOpenedList", togetherListWithMemberCount);
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        return togetherMap;
-    }
-
-    public boolean isAvailableToDeleteMember(Member member){
-
-        //개설한 함께해요가 있을 경우 -탈퇴 불가
-        List<TogetherOpened> togetherOpenedListByMember = getTogetherOpenedListByMember(member.getMemberEmail());
-        if(!togetherOpenedListByMember.isEmpty()){
-            return  false;
-        }
-
-
-        //참여중인 함께해요가 있을 경우 - 탈퇴불가 / '거절 일경우는 해당 값 지우면서 탈퇴 가능
-        List<TogetherJoin> togetherJoinListByMember = getTogetherJoinListByMember(member.getMemberEmail());
-
-        List<TogetherJoin> rejectedTogetherJoinList = new ArrayList<>();
-
-
-        if(!togetherJoinListByMember.isEmpty()){
-            for(TogetherJoin tj : togetherJoinListByMember){
-               if(tj.getTogetherJoinState().equals("거절")){
-                   rejectedTogetherJoinList.add(tj);
-               }else{
-                   return false;
-               }
-            }
-            try{
-              togetherJoinRepository.deleteAll(rejectedTogetherJoinList);
-            } catch (Exception e){
-              e.printStackTrace();
-              return false;
-            }
-
-
-        }
-      return true;
-
-
-    }
 
     public Map<String, Object> getTogetherCancelRequestList(Integer pageNum ,String togetherTitle) {
         log.info("togetherService.getTogetherCancelRequestList()");
@@ -835,4 +856,5 @@ public class TogetherService {
         }
         return togetherTagsList;
     }
+
 }

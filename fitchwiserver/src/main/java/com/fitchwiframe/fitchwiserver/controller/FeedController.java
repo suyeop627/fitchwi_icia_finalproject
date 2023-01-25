@@ -21,6 +21,22 @@ public class FeedController {
     public FeedController(FeedService feedService) {
         this.feedService = feedService;
     }
+
+
+    //회원이 작성한 피드 조회
+    @GetMapping("/getMemberFeed")
+    private List<Feed>getMemberFeed(@RequestParam String memberEmail){
+        log.info("memberController.getMemberFeed");
+        return feedService.getMemberFeed(memberEmail);
+    }
+
+
+
+
+
+
+
+
     @PostMapping("/insertfeed")
     public String insertFeed(@RequestPart(value = "data") Feed newFeed,
                              @RequestPart(value = "uploadImage", required = false) List<MultipartFile> files, HttpSession session) {
@@ -50,12 +66,7 @@ public class FeedController {
     }
 
 
-    //멤버가 작성한 피드 조회
-    @GetMapping("/getMemberFeed")
-    private List<Feed>getMemberFeed(@RequestParam String memberEmail){
-        log.info("memberController.getMemberFeed");
-        return feedService.getMemberFeed(memberEmail);
-    }
+
 
      // 피드 댓글 등록
     @PostMapping("/insertComment")

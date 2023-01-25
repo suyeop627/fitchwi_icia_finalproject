@@ -20,7 +20,7 @@ public class MemberController {
   @Autowired
   private MemberService memberService;
 
-  //회원가입 - 관심사 배열 처리 필요.
+  //회원가입
   @PostMapping("/joinmember")
   private String joinMember(@RequestPart(value = "data", required = true) Member newMember,
                             @RequestPart(value = "uploadImage", required = false) MultipartFile pic,
@@ -33,7 +33,6 @@ public class MemberController {
 
   //중복확인
   @GetMapping("/checkduplicatesmemberId")
-  //나중에 이름 변경 필요
   private String checkDuplicatesMemberId(@RequestParam String userId) {
     log.info("memberController.checkDuplicatesMemberId()");
     return memberService.checkDuplicatesMemberId(userId);
@@ -46,6 +45,7 @@ public class MemberController {
     return memberService.loginMember(member);
   }
 
+  //회원 정보 조회
   @GetMapping("/getMemberInfo")
   private Member getMemberInfo(@RequestParam String userId){
     log.info("getMemberInfo()");
@@ -88,13 +88,7 @@ public class MemberController {
   }
 
 
-    @GetMapping("/createMemeber")
-  private String createMembers(){
-    log.info("memberController.createMembers");
-
-    return memberService.createMember();
-  }
-
+//비밀번호 확인
   @PostMapping("/checkPwd")
   private String checkPwd(@RequestBody Member memberToCheck){
     log.info("memberController.checkPwd()");
@@ -104,6 +98,7 @@ public class MemberController {
 
   }
 
+  //비밀번호 변경
   @PutMapping("/updatePwd")
   private String updatePwd(@RequestBody Member memberToChangePwd){
     log.info("memberController.updatePwd()");
@@ -112,6 +107,7 @@ public class MemberController {
     return memberService.updatePwd(memberToChangePwd);
   }
 
+  //회원 정보 수정
   @PostMapping("/updateMemberInfo")
   private Member updateMemberInfo(@RequestPart(value = "data", required = true) Member memberToUpdate,
                                   @RequestPart(value = "uploadImage", required = false) MultipartFile pic,
@@ -120,25 +116,21 @@ public class MemberController {
     return memberService.updateMemberInfo(memberToUpdate, pic, session);
   }
 
-
+  //카카오 로그인
   @GetMapping("/login/kakao/callback")
   public Map<String, Object> kakaoLogin(@RequestParam String code, HttpSession session) {
     log.info("memberController.kakaoLogin");
     return  memberService.registerOrLogin(code, session);
   }
 
+  //카카오 로그아웃
   @PostMapping("/logout")
   public String logoutMember( HttpSession session ){
     log.info("memberController.logoutMember");
     return memberService.logoutMember( session);
   }
 
-
-  @GetMapping("/getMemberList")
-  private List<Member> getMemberList() {
-    return memberService.getMemberList();
-  }
-
+  //전화번호로 회원 정보 존재유무 확인
   @PostMapping("/checkPhone")
   public String checkPhone(@RequestBody String memberPhone){
     log.info("memberController.checkPhone");
@@ -146,10 +138,19 @@ public class MemberController {
     return memberService.checkPhone(memberPhone);
   }
 
+  //전화번호로 회원 정보 조회
   @GetMapping("/getMemberByPhone")
   public String[] getMemberByPhone(@RequestParam String memberPhone){
     log.info("memberController.getMemberByPhone");
     return memberService.getMemberByPhone(memberPhone);
-
   }
+
+
+
+///////////////////////
+@GetMapping("/getMemberList")
+private List<Member> getMemberList() {
+  return memberService.getMemberList();
+}
+
 }
