@@ -110,7 +110,6 @@ public class TalkService {
         }catch (Exception e){
             e.printStackTrace();
         }
-        System.out.println("talkMap = " + talkMap);
         return talkMap;
     }
 

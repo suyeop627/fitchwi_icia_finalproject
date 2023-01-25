@@ -50,7 +50,7 @@ public class MemberService {
   //회원가입
   public String joinMember(Member newMember, MultipartFile pic, HttpSession session) {
     log.info("memberService.joinmember");
-    System.out.println("pic = " + pic);
+
     String result = null;
     String cryptPwd = null;
     //pwd가 null이 아닌 경우(일반회원일 경우), 암호화해서 저장
@@ -252,9 +252,7 @@ public class MemberService {
     // member.getMemberSaveimg에는 '/images/'가 같이 저장돼있으므로, '/images/' 부분을 제외하고 불러오기
     String realSysname = filsSysname.substring(8);
 
-    System.out.println("realSysname = " + realSysname);
 
-    System.out.println(realSysname);
     //기본이미지 사용중일 경우 삭제 처리 안함
     if (realSysname.equals("DefaultProfileImageSystemNameBasic.jpg")) {
       return;
@@ -352,14 +350,15 @@ public class MemberService {
     //불필요한 정보 제거 후 반환
     return extractMemberData(followerMemberList);
   }
-//반환할 Member의 불필요한 정보 제거. -> Dto를 활용하는 방식이 더 적절했을 듯.
+
+  //반환할 Member의 불필요한 정보 제거. -> Dto를 활용하는 방식이 더 적절했을 듯.
   private List<Member> extractMemberData(List<Member> memberList) {
     List<Member> memberListForReturn = new ArrayList<>();
 
     if (memberList != null) {
 
       for (Member member : memberList) {
-        System.out.println("member = " + member);
+
         member.setMemberPwd(null);
         member.setMemberBirth("");
         member.setMemberPhone("");
@@ -372,7 +371,7 @@ public class MemberService {
     return memberListForReturn;
   }
 
-//비밀번호 확인
+  //비밀번호 확인
   public String checkPwd(Member memberToCheck) {
     log.info("memberService.checkPwd()");
     String result = "";
@@ -391,7 +390,7 @@ public class MemberService {
     return result;
   }
 
-//비밀번호 변경
+  //비밀번호 변경
   public String updatePwd(Member memberToChangePwd) {
     log.info("memberService.checkPwd()");
     String result = "fail";
@@ -400,7 +399,7 @@ public class MemberService {
       Member dbMember = memberRepository.findById(memberToChangePwd.getMemberEmail()).get();
       //db에 저장된 회원 비밀번호와 일치여부 확인
       if (encoder.matches(memberToChangePwd.getMemberPwd(), dbMember.getMemberPwd())) {
-      //기존 비밀번호와 동일할 경우, 이후 처리없이 반환
+        //기존 비밀번호와 동일할 경우, 이후 처리없이 반환
         result = "same";
 
         return result;
@@ -417,17 +416,15 @@ public class MemberService {
     return result;
   }
 
-//회원 정보 수정
+  //회원 정보 수정
   public Member updateMemberInfo(Member memberToUpdate, MultipartFile pic, HttpSession session) {
     log.info("memberService.updateMemberInfo();");
     //회원 정보 수정 후, 헤더에 회원 정보를 최신화하기 위해 반환할 인스턴스 생성
     Member updatedMember = new Member();
-    System.out.println("memberToUpdate1 = " + memberToUpdate);
-    System.out.println("pic = " + pic);
 
 
     try {
-      System.out.println("memberToUpdate2 = " + memberToUpdate);
+
       //새로 저장할 회원 객체의 키값(아이디)로 기존 회원 테이블 조회
       Member dbMember = memberRepository.findById(memberToUpdate.getMemberEmail()).get();
       //기존 회원 객체의 비밀번호가 null이 아닐 경우(카카오 회원이 아닐경우), 기존 비밀번호를 새로 저장할 회원 객체에 저장
@@ -445,9 +442,9 @@ public class MemberService {
         deleteFile(memberToUpdate.getMemberSaveimg(), session);
         fileUpload(memberToUpdate, pic, session);
       }
-      System.out.println("memberToUpdate2 = " + memberToUpdate);
+
       Member savedMember = memberRepository.save(memberToUpdate);
-      System.out.println("savedMember = " + savedMember);
+
       //헤더 정보를 최신화 할 데이터 반환
       updatedMember.setMemberEmail(savedMember.getMemberEmail());
       updatedMember.setMemberNickname(savedMember.getMemberNickname());
@@ -460,7 +457,7 @@ public class MemberService {
     return updatedMember;
   }
 
-//카카오 로그인
+  //카카오 로그인
   //토큰 받기
   public String getToken(String code) {
 
@@ -482,7 +479,7 @@ public class MemberService {
     RestTemplate restTemplate = new RestTemplate();
     //카카오 개발자 사이트에서 지정한 형식에 맞춰 요청 보내고, 응답객체에 결과 받기
     ResponseEntity<String> response = restTemplate.exchange("https://kauth.kakao.com/oauth/token", HttpMethod.POST, tokenRequest, String.class);
-    System.out.println("response = " + response);
+
     String accessToken = null;
     try {
       //응답받은 ResponseEntity에서 body정보를 가져오기.
@@ -499,7 +496,7 @@ public class MemberService {
     return accessToken;
   }
 
-//카카오 계정 정보 가져오기
+  //카카오 계정 정보 가져오기
   public JsonNode getMemberInfoFromKaKao(String accessToken) {
     //카카오 개발자 사이트에서 지정한 형식대로 헤더 정보 생성
     HttpHeaders httpHeaders = new HttpHeaders();
@@ -511,7 +508,7 @@ public class MemberService {
     RestTemplate restTemplate = new RestTemplate();
     //카카오 개발자 사이트에서 지정한 형식대로 요청 보내고, response를 응답객체에 저장
     ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.POST, memberInfoRequest, String.class);
-    System.out.println("response = " + response);
+
 
 
     /*
@@ -524,14 +521,13 @@ public class MemberService {
     */
 
 
-
     JsonNode jsonNode = null;
     try {
       String responseBody = response.getBody();
       ObjectMapper objectMapper = new ObjectMapper();
       //objectMapper.readTree(JSON) : json을 jsonNode 객체로 변환
       jsonNode = objectMapper.readTree(responseBody);
-      //   System.out.println("jsonNode = " + jsonNode);
+
 
     } catch (Exception e) {
       e.printStackTrace();
@@ -586,14 +582,14 @@ public class MemberService {
             resultMap.put("mbti", dbMember.getMemberMbti());
             resultMap.put("profileImg", dbMember.getMemberSaveimg());
             session.setAttribute("at", accessToken);
-            System.out.println("session.getAttribute(\"at\") = " + session.getAttribute("at"));
+
             //로그인 제한일을 null로 변경후 저장
             dbMember.setMemberRestriction(null);
             memberRepository.save(dbMember);
           }
           return resultMap;
         }
-      //로그인 제한이 없으며, 로그인 가능
+        //로그인 제한이 없으며, 로그인 가능
         resultMap.put("isPresent", "ok");
         resultMap.put("member", dbMember);
         resultMap.put("state", "ok");
@@ -602,10 +598,10 @@ public class MemberService {
         resultMap.put("mbti", dbMember.getMemberMbti());
         resultMap.put("profileImg", dbMember.getMemberSaveimg());
         session.setAttribute("at", accessToken);
-        System.out.println("session.getAttribute(\"at\") = " + session.getAttribute("at"));
+
         return resultMap;
       }
-    //저장된 회원 정보가 없는 경우, 회원 가입에 활용될 정보를 담아 반환.
+      //저장된 회원 정보가 없는 경우, 회원 가입에 활용될 정보를 담아 반환.
       member.setMemberEmail(kakaoProfile.getKakao_account().getEmail());
       member.setMemberNickname(kakaoProfile.getProperties().getNickname());
       member.setMemberImg(kakaoProfile.getProperties().getProfile_image());
@@ -647,7 +643,7 @@ public class MemberService {
 //로그아웃 요청에 대한 응답이 200일 경우, 로그아웃 처리 완료
     if (response.getStatusCode().equals(HttpStatus.OK)) {
       session.removeAttribute("at");
-      System.out.println("session.getAttribute(\"at\").toString() = " + session.getAttribute("at").toString());
+
       result = "ok";
     }
 
@@ -656,12 +652,11 @@ public class MemberService {
   }
 
 
-
-//입력받은 전화번호가 이미 사용중인지 여부 확인
+  //입력받은 전화번호가 이미 사용중인지 여부 확인
   public String checkPhone(String memberPhone) {
     log.info("memberService.checkPhone");
     log.info(memberPhone);
-    // System.out.println( memberPhone);
+
     String result = "fail";
     Member byMemberPhone = memberRepository.findByMemberPhone(memberPhone);
     if (byMemberPhone == null) {
@@ -690,13 +685,12 @@ public class MemberService {
         result[1] = byMemberPhone.getMemberEmail();
       }
     }
-    System.out.println("result = " + result.toString());
+
     return result;
   }
 
 
-
-///////////////
+  ///////////////
   public List<Member> getMemberList() {
     log.info("memberService.getMemberList()");
 

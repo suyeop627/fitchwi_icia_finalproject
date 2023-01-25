@@ -52,7 +52,7 @@ public class AdminService {
     if (keyword.equals("")) {
       //검색어가 없는 경우, 전체 목록을 기준으로 조회
       result = facilitiesRepository.findAll(pageable);
-      System.out.println("result = " + result);
+
     } else {
       //검색어가 존재할 경우, 해당 검색어를 포함한 목록 조회
       String keywordToSearch = "%" + keyword + "%";
@@ -119,11 +119,11 @@ public class AdminService {
         return result;
       }
 
-      System.out.println("facilities = " + nodayRepository.findAllByFacilitiesCode(facilities));
+
 
       //해당 시설에 지정돼있는 이용 불가일 삭제
       nodayRepository.deleteAll(nodayRepository.findAllByFacilitiesCode(facilities));
-      System.out.println("facilitiesCode = " + facilitiesCode);
+
       //시설 삭제
       facilitiesRepository.deleteById(facilitiesCode);
       result = "ok";
@@ -202,7 +202,7 @@ public class AdminService {
 
       //삭제하려는 날짜에 함께해요가 예정돼있는 지 확인
       for (String noday : noDayToSend) {
-        System.out.println("noday = " + noday);
+
         //삭제하려는 이용 불가일을 이용중인 함께해요가 있을 경우, 삭제 불가.
         for (TogetherOpened to : togetherOpenedList) {
           Together together = togetherRepository.findByTogetherOpenedCodeAndTogetherDate(to, noday);
@@ -242,7 +242,7 @@ public class AdminService {
   public String report(Report report) {
     log.info(report.toString());
     log.info("adminService.report()");
-    System.out.println("report = " + report);
+
     String result = "fail";
     log.info(report.toString());
 
@@ -297,7 +297,7 @@ public class AdminService {
           //해당 신고내역의 상세 신고 내역 테이블에서 신고하는 회원이 이미 신고한 적이 있는 지 조회
           for (Report report : reportedList) {
             ReportDetail reportDetail = reportDetailRepository.findByReportCodeAndMemberEmail(report, memberReporting);
-            System.out.println("reportDetail = " + reportDetail);
+
             //신고내역이 존재한다면 신고 불가.
             if (reportDetail != null) {
               result = "reported";
@@ -330,7 +330,7 @@ public class AdminService {
   //신고 목록 조회
   public Map<String, Object> getReportList(Integer pageNum, String keyword) {
     log.info("adminService.getReportList()");
-    System.out.println("keyword = " + keyword);
+
 
     if (pageNum == null) {
       pageNum = 1;
@@ -374,15 +374,14 @@ public class AdminService {
   //회원에 로그인 제한일 설정
   public String restrictMember(String restrictDate, String targetMemberEmail) {
     log.info("restrictMemberEmail()");
-    System.out.println("restrictDate = " + restrictDate);
-    System.out.println("targetMemberEmail = " + targetMemberEmail);
+
     String result = "fail";
     try {
       //제제할 회원 조회
       Member targetMember = memberRepository.findById(targetMemberEmail).get();
       //이용 제한일 저장
       targetMember.setMemberRestriction(restrictDate);
-      System.out.println("targetMember = " + targetMember);
+
       memberRepository.save(targetMember);
       result = "ok";
     } catch (Exception e) {
@@ -438,7 +437,7 @@ public class AdminService {
   public void deleteAllByMember(Member member) {
     //내가 신고한 reportdetail 조회 후, 존재한다면 전체 삭제
     List<ReportDetail> reportDetailList = reportDetailRepository.findByMemberEmail(member);
-    System.out.println("reportDetailList = " + reportDetailList);
+
     if (!(reportDetailList.isEmpty())) {
       reportDetailRepository.deleteAll(reportDetailList);
     }
@@ -451,7 +450,7 @@ public class AdminService {
         List<ReportDetail> reportedDetailList = reportDetailRepository.findByReportCode(report);
         reportDetailRepository.deleteAll(reportedDetailList);
       }
-      System.out.println("reportList = " + reportList);
+
 
       reportRepository.deleteAll(reportList);
     }
@@ -463,11 +462,11 @@ public class AdminService {
   public String managerLogin(Manager manager) {
     log.info("adminService.managerLogin()");
     String result = "fail";
-    System.out.println("manager = " + manager);
+
     try {
       Optional<Manager> byId = managerRepository.findById(manager.getManagerId());
       if (byId.isPresent()) {
-        System.out.println("byId.get() = " + byId.get());
+
         Manager dbManager = byId.get();
         if (dbManager.getManagerPwd().equals(manager.getManagerPwd())) {
           result = "ok";

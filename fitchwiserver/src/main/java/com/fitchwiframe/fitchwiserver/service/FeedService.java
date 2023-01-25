@@ -42,6 +42,27 @@ public class FeedService {
     }
 
 
+    //멤버가 작성한 피드 조회
+    public List<Feed>getMemberFeed(String memberEmail) {
+        log.info("feedService.getMemberFeed");
+        Member member = memberRepository.findById(memberEmail).get();
+        List<Feed> memberFeedList = new ArrayList<>();
+        try {
+            List<Feed> feedList = feedRepository.findAllByMemberEmailOrderByFeedDateDesc(member);
+            //각 피드에 해당하는 피드파일 가져오기
+            for(Feed feed : feedList){
+                List<FeedFile> feedFileList = feedFileRepository.findByFeedCode(feed.getFeedCode());
+                feed.setFfList(feedFileList);
+                memberFeedList.add(feed);
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        //피드 가져오기
+        return memberFeedList;
+    }
+
+    ////////////////////////////////
 
     // 피드 등록
     public String insertFeed(Feed newFeed, List<MultipartFile> files, HttpSession session ) {
@@ -136,25 +157,6 @@ public class FeedService {
         return feedList;
     }
 
-    //멤버가 작성한 피드 조회
-    public List<Feed>getMemberFeed(String memberEmail) {
-        log.info("feedService.getMemberFeed");
-        Member member = memberRepository.findById(memberEmail).get();
-        List<Feed> memberFeedList = new ArrayList<>();
-        try {
-            List<Feed> feedList = feedRepository.findAllByMemberEmailOrderByFeedDateDesc(member);
-            //각 피드에 해당하는 피드파일 가져오기
-            for(Feed feed : feedList){
-                List<FeedFile> feedFileList = feedFileRepository.findByFeedCode(feed.getFeedCode());
-                feed.setFfList(feedFileList);
-                memberFeedList.add(feed);
-            }
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        //피드 가져오기
-        return memberFeedList;
-    }
 
 
     public String insertComment(FeedComment feedComment) {
