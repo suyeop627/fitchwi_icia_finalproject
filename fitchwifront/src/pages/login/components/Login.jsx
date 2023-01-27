@@ -2,7 +2,6 @@ import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -12,16 +11,18 @@ import { useNavigate, Link } from "react-router-dom";
 import { LoginOutlined } from "@mui/icons-material";
 import KaKaoLogin from "./KakaoLogin";
 import FindMemberInfoModal from "./FindMemberInfoModal";
+import { useState } from "react";
+import { useCallback } from "react";
 
 export default function Login({ sucLogin, swAlert }) {
   const nav = useNavigate();
-  const [loginForm, setLoginForm] = React.useState({
+  const [loginForm, setLoginForm] = useState({
     memberEmail: "",
     memberPwd: "",
   });
   const { memberEmail, memberPwd } = loginForm;
 
-  const onLoginChange = React.useCallback(
+  const onLoginChange = useCallback(
     (e) => {
       const loginObj = {
         ...loginForm,
@@ -31,7 +32,7 @@ export default function Login({ sucLogin, swAlert }) {
     },
     [loginForm]
   );
-  const onLoginSend = React.useCallback(
+  const onLoginSend = useCallback(
     (e) => {
       e.preventDefault();
       axios.post("/loginmember", loginForm).then((res) => {
@@ -46,9 +47,7 @@ export default function Login({ sucLogin, swAlert }) {
             swAlert(res.data.memberNickname + "님 환영합니다.", "success", () => {
               nav("/", { replace: true });
             });
-
             break;
-
           case "wrong pwd":
             swAlert("비밀번호가 틀렸습니다.", "warning");
             break;
@@ -56,15 +55,9 @@ export default function Login({ sucLogin, swAlert }) {
             swAlert("아이디와 일치하는 회원정보가 없습니다.", "warning");
             break;
           case "reported":
-            swAlert(
-              "누적된 신고에 의해, <br/> FITCHWI 이용이 불가합니다.<br/> 제한 해지일 : " +
-                res.data.memberRestriction,
-              "warning",
-              () => {
-                nav("/", { replace: true });
-              }
-            );
-
+            swAlert("누적된 신고에 의해, <br/> FITCHWI 이용이 불가합니다.<br/> 제한 해지일 : " + res.data.memberRestriction, "warning", () => {
+              nav("/", { replace: true });
+            });
             break;
           case "released":
             swAlert(res.data.memberRestriction + "부로 이용 제한이 해제됐습니다.", "info", () => {
@@ -77,21 +70,15 @@ export default function Login({ sucLogin, swAlert }) {
                 nav("/", { replace: true });
               });
             });
-
             break;
           default:
             break;
         }
       });
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [loginForm, nav, sucLogin]
   );
-  const createMemeber = () => {
-    axios.get("/createMemeber").then((result) => {
-      alert(result.data);
-    });
-  };
+
   return (
     <>
       <Container maxWidth="xs">
@@ -113,17 +100,7 @@ export default function Login({ sucLogin, swAlert }) {
             로그인
           </Typography>
           <Box component="form" onSubmit={onLoginSend} sx={{ mt: 1 }} style={{ width: "300px" }}>
-            <TextField
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="이메일"
-              name="memberEmail"
-              autoFocus
-              onChange={onLoginChange}
-              value={memberEmail}
-            />
+            <TextField margin="normal" required fullWidth label="이메일" name="memberEmail" autoFocus onChange={onLoginChange} value={memberEmail} />
             <TextField
               margin="normal"
               required
@@ -131,7 +108,6 @@ export default function Login({ sucLogin, swAlert }) {
               name="memberPwd"
               label="Password"
               type="password"
-              id="password"
               inputProps={{ maxLength: 20 }}
               onChange={onLoginChange}
               value={memberPwd}
@@ -157,9 +133,6 @@ export default function Login({ sucLogin, swAlert }) {
             </Grid>
           </Grid>
         </Box>
-        <Button fullWidth variant="outlined" sx={{ mt: 3, mb: 2 }} onClick={() => createMemeber()}>
-          테스트계정생성
-        </Button>
       </Container>
     </>
   );

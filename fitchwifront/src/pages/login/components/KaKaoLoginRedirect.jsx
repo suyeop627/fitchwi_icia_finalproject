@@ -21,7 +21,7 @@ const KaKaoLoginRedirect = ({ sucLogin, ...props }) => {
     let code = new URL(window.location.href).searchParams.get("code");
 
     const kakaoLogin = async () => {
-      await axios.get("/login/kakao/callback?", { params: { code: code } }).then((res) => {
+      await axios.get("/login/kakao/callback", { params: { code: code } }).then((res) => {
         // eslint-disable-next-line no-unused-vars
         const { isPresent, member } = res.data;
 

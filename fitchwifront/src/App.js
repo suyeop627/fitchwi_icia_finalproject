@@ -22,7 +22,7 @@ import Swal from "sweetalert2";
 function App() {
   const nav = useNavigate();
 
-  //로그인 상태 저장
+  //로그인 상태를 저장하는 state
   const [lstate, setLstate] = useState({
     logid: "",
     nickName: "",
@@ -31,6 +31,7 @@ function App() {
     flink: "/login",
   });
 
+  //실행 후 최초 1회, 세션스토리지에 저장된 회원 정보를 가져와서 로그인 상태저장 state에 저장.
   useEffect(() => {
     const id = sessionStorage.getItem("id");
     const nickName = sessionStorage.getItem("nickName");
@@ -57,7 +58,7 @@ function App() {
     }
   }, []);
 
-  //로그인 성공 시 로그인 상태 변경 함수
+  //로그인 성공 시 로그인 상태 변경.
   const sucLogin = useCallback((id, nickName, profileImg, mbti) => {
     const newState = {
       logid: id,
@@ -69,6 +70,7 @@ function App() {
     setLstate(newState);
   }, []);
 
+  //sweet alert2 라이브러리 사용한 기본 alert 정의.
   const swAlert = (html, icon = "success", func) => {
     Swal.fire({
       title: "알림",
@@ -78,39 +80,40 @@ function App() {
       confirmButtonColor: "#ff0456",
     }).then(func);
   };
-
+  //로그아웃
   const onLogout = () => {
-    axios.post("/logout", { data: { id: lstate.logid } }).catch((error) => {
-      // swAlert("로그아웃 과정에 문제가 발생했습니다.", "warning");
-    });
+    axios.post("/logout", { data: { id: lstate.logid } });
 
-    // const REST_API_KEY = "bad1b060092a0ed86a3dfe34c2fb99f9";
-    // const REDIRECT_URI = "http://localhost:3000/";
-    // const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/logout?client_id=${REST_API_KEY}&logout_redirect_uri=${REDIRECT_URI}`;
-    // window.location.href = KAKAO_AUTH_URL;
-
+    /*
+    //카카오 계정과 함께 로그아웃 시, 요청 URL.
+    //본 프로젝트에서는 브라우저의 카카오 계정 로그인 상태는 남겨두는 방식의 로그아웃을 적용함.
+    const REST_API_KEY = "bad1b060092a0ed86a3dfe34c2fb99f9";
+    const REDIRECT_URI = "http://localhost:3000/";
+    const KAKAO_AUTH_URL = `https://kauth.kakao.com/oauth/logout?client_id=${REST_API_KEY}&logout_redirect_uri=${REDIRECT_URI}`;
+    window.location.href = KAKAO_AUTH_URL;
+    */
     const newState = {
       logid: "",
       mbti: "",
       flink: "/login",
     };
     setLstate(newState);
-    //로그아웃 시 로그인 상태 및 페이지번호 삭제
-    sessionStorage.removeItem("pageNum");
+    //로그아웃 시 로그인 상태 삭제
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("nickName");
     sessionStorage.removeItem("mbti");
     sessionStorage.removeItem("classification");
     sessionStorage.removeItem("profileImg");
     swAlert("로그아웃이 완료됐습니다.", "success", () => {
-      nav("/"); //첫페이지로 돌아감.
+      nav("/"); //로그아웃 이후 첫 페이지 이동.
     });
   };
-
+  //관리자인지 판별할 state
   const [isManager, setIsManager] = useState(false);
 
   return (
     <>
+      {/* 관리자 로그인일 경우, 관리자용 헤더 출력. */}
       {isManager === true ? <ManagerNav /> : <Header lstate={lstate} onLogout={onLogout} />}
       <Routes>
         <Route path="/*" element={<Home lstate={lstate} />}></Route>

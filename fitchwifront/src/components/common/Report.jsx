@@ -12,8 +12,8 @@ import moment from "moment/moment";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
-//category : 함께해요-together / 얘기해요 - talk / 공유해요 - share / 회원 - memberpage / 댓글-comment
-//target : togerther / talk / feed /각 키값  //  회원신고는 target="0"
+//category : 얘기해요 - talk / 공유해요 - share / 회원 - memberpage 
+//target :  talk / feed /각 키값  //  회원신고는 target="0"
 //type : MenuItem으로 쓸거면 prop으로 MenuItem 전달 / 기본값은 버튼
 export default function Report({ targetMember, target, category, type }) {
   const [open, setOpen] = useState(false);

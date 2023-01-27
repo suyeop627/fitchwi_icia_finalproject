@@ -15,9 +15,11 @@ import Swal from "sweetalert2";
 const JoinIndex = () => {
   let formData = new FormData();
   const nav = useNavigate();
-  const [fileForm, setFileForm] = useState("");
-  const [isKakao, setIsKakao] = useState(false);
   const location = useLocation();
+  //업로드한 프로필 사진 저장
+  const [fileForm, setFileForm] = useState("");
+  //카카오 회원가입인지
+  const [isKakao, setIsKakao] = useState(false);
 
   const [joinForm, setJoinForm] = useState({
     memberEmail: "",
@@ -33,14 +35,19 @@ const JoinIndex = () => {
     memberImg: "",
     memberSaveimg: "",
   });
-  /////////////////////
-  const [isValid, setIsValid] = useState(false);
-  useEffect(() => {
 
+  //정상적인 회원가입 페이지 접속인지 판단하기위한 state
+  const [isValid, setIsValid] = useState(false);
+
+  useEffect(() => {
+    //정상적인 회원가입 요청. location.state가 null일 경우, 해당 페이지 접속 불가.
     if (location.state != null) {
       setIsValid(true);
+      //일반 회원가입
       if (location.state.member === "newMember") {
-      } else {
+      }
+      //카카오 회원가입
+      else {
         setIsValid(true);
 
         setIsKakao(true);
@@ -53,6 +60,8 @@ const JoinIndex = () => {
         };
         setJoinForm(joinFormObj);
       }
+    } else {
+      swAlert("접속불가");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -117,67 +126,22 @@ const JoinIndex = () => {
       <Routes>
         <Route
           path="/"
-          element={
-            <Nickname
-              onChange={onChange}
-              joinForm={joinForm}
-              swAlert={swAlert}
-              isValid={isValid}
-              location={location}
-            />
-          }
+          element={<Nickname onChange={onChange} joinForm={joinForm} swAlert={swAlert} isValid={isValid} location={location} />}
         ></Route>
 
-        <Route
-          path="/userimg"
-          element={
-            <UserImg joinForm={joinForm} setFileForm={setFileForm} swAlert={swAlert} isValid={isValid} />
-          }
-        ></Route>
+        <Route path="/userimg" element={<UserImg joinForm={joinForm} setFileForm={setFileForm} swAlert={swAlert} isValid={isValid} />}></Route>
         <Route
           path="/name"
-          element={
-            <Name
-              location={location}
-              onChange={onChange}
-              joinForm={joinForm}
-              swAlert={swAlert}
-              isKakao={isKakao}
-              isValid={isValid}
-            />
-          }
+          element={<Name location={location} onChange={onChange} joinForm={joinForm} swAlert={swAlert} isKakao={isKakao} isValid={isValid} />}
         ></Route>
-        <Route
-          path="/gender"
-          element={
-            <Gender joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />
-          }
-        ></Route>
-        <Route
-          path="/birth"
-          element={<Birth onChange={onChange} joinForm={joinForm} swAlert={swAlert} isValid={isValid} />}
-        ></Route>
-        <Route
-          path="/interest"
-          element={
-            <Interest joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />
-          }
-        ></Route>
-        <Route
-          path="/mbti"
-          element={<Mbti joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />}
-        ></Route>
+        <Route path="/gender" element={<Gender joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />}></Route>
+        <Route path="/birth" element={<Birth onChange={onChange} joinForm={joinForm} swAlert={swAlert} isValid={isValid} />}></Route>
+        <Route path="/interest" element={<Interest joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />}></Route>
+        <Route path="/mbti" element={<Mbti joinForm={joinForm} setJoinForm={setJoinForm} swAlert={swAlert} isValid={isValid} />}></Route>
         <Route
           path="/userinfo"
           element={
-            <UserInfo
-              joinForm={joinForm}
-              onChange={onChange}
-              setJoinForm={setJoinForm}
-              isKakao={isKakao}
-              swAlert={swAlert}
-              isValid={isValid}
-            />
+            <UserInfo joinForm={joinForm} onChange={onChange} setJoinForm={setJoinForm} isKakao={isKakao} swAlert={swAlert} isValid={isValid} />
           }
         ></Route>
       </Routes>
