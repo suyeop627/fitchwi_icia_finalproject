@@ -40,17 +40,13 @@ const JoinIndex = () => {
   const [isValid, setIsValid] = useState(false);
 
   useEffect(() => {
-    //정상적인 회원가입 요청. location.state가 null일 경우, 해당 페이지 접속 불가.
+    //정상적인 회원가입 요청. location.state가 null일 경우, isValid는 false로 유지.
     if (location.state != null) {
       setIsValid(true);
-      //일반 회원가입
-      if (location.state.member === "newMember") {
-      }
-      //카카오 회원가입
-      else {
-        setIsValid(true);
-
+      //일반 회원가입이 아닐 경우,
+      if (location.state.member !== "newMember") {
         setIsKakao(true);
+        //카카오 계정 로그인 시, 카카오 서버에서 받은 유저 데이터를 회원가입용 객체에 저장
         const joinFormObj = {
           ...joinForm,
           memberEmail: location.state.memberEmail,
@@ -60,13 +56,11 @@ const JoinIndex = () => {
         };
         setJoinForm(joinFormObj);
       }
-    } else {
-      swAlert("접속불가");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
-  //////////
+  //입력값을 회원가입 용 객체에 저장
   const onChange = useCallback(
     (e) => {
       const joinObj = {
@@ -78,10 +72,12 @@ const JoinIndex = () => {
     [joinForm]
   );
 
+  //유저 데이터를 서버에 전송
   const sendJoin = (e) => {
     e.preventDefault();
-
+    //유저 데이터를 formdata에 추가
     formData.append("data", new Blob([JSON.stringify(joinForm)], { type: "application/json" }));
+    //유저 프로필 사진을 formdata에 추가
     formData.append("uploadImage", fileForm);
 
     const config = {

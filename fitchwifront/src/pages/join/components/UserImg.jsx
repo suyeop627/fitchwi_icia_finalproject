@@ -14,15 +14,21 @@ export default function UserImg({ setFileForm, joinForm, isValid, swAlert }) {
     }
   });
 
+  //이미지 미리보기 및 파일 업로드
   const imageLoad = (event) => {
     if (event.target.files.length !== 0) {
+      //등록된 이미지가 존재한다면, fileForm에 저장.
       setFileForm(event.target.files[0]);
       let reader = new FileReader();
+      //onload : 이미지 읽기에 성공했을 실행되는 이벤트 핸들러
       reader.onload = (e) => {
+        //읽기에 성공한 이미지를 file state에 저장 -> 미리보기할 이미지
         setFile(e.target.result);
       };
+      //readAsDataURL : 이미지를 DataURL 형식으로 읽음
       reader.readAsDataURL(event.target.files[0]);
     } else {
+      //이미지 등록을 취소했을 때, file과 fileForm state 초기화.
       setFile("");
       setFileForm("");
     }
@@ -39,7 +45,7 @@ export default function UserImg({ setFileForm, joinForm, isValid, swAlert }) {
       <Typography variant="h6" mb={5}>
         ( *미등록시 기본 이미지로 등록됩니다.)
       </Typography>
-      <Avatar src={file !== "" ? file : ""} sx={{ width: 250, height: 250, m: "auto", mb: 2 }} />
+      <Avatar src={file !== "" ? file : "/images/DefaultProfileImageSystemNameBasic.jpg"} sx={{ width: 250, height: 250, m: "auto", mb: 2 }} />
       <Button variant="outlined" sx={{ pl: 5 }}>
         <FormControlLabel
           control={

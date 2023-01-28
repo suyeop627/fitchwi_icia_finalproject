@@ -432,25 +432,23 @@ public class FeedService {
     }
 @Transactional
     public void deleteAllByMember(Member member, HttpSession session){
-
+//작성한 댓글이 있다면, 삭제
         List<FeedComment> memberCommentList = feedCommentRepository.findByMemberEmail(member);
         if(!(memberCommentList.isEmpty())){
             feedCommentRepository.deleteAll(memberCommentList);
         }
-
+//피드에 좋아요 한 내역이 있다면 삭제
         List<FeedLike> memberFeedLikeList = feedLikeRepository.findByMemberEmail(member);
         if(!(memberFeedLikeList.isEmpty())){
             feedLikeRepository.deleteAll(memberFeedLikeList);
         }
-
+//작성한 피드가 있다면 삭제
         List<Feed> memberFeedList = getMemberFeed(member.getMemberEmail());
         if(!(memberFeedList.isEmpty())){
             for(Feed feed : memberFeedList){
                 deleteFeed(feed, session);
             }
         }
-
-
     }
 
     public List<Member> getFeedListOrderByMember() {

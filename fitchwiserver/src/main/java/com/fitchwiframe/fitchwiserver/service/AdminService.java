@@ -250,7 +250,9 @@ public class AdminService {
       //신고 대상 회원 정보 가져오기
       Member targetMember = memberRepository.findById(report.getMemberEmail().getMemberEmail()).get();
       //카테고리(마이페이지, 피드, 얘기해요), 신고대상(게시글의 기본키/회원 신고일 경우 0), 신고대상회원(이메일)이 일치하는 신고내역있는지 조회
-      Report existingReport = reportRepository.findByReportCategoryAndReportTargetAndMemberEmail(report.getReportCategory(), report.getReportTarget(), targetMember);
+      Report existingReport =
+          reportRepository.findByReportCategoryAndReportTargetAndMemberEmail(report.getReportCategory(),
+                                                                            report.getReportTarget(), targetMember);
       if (existingReport == null) {//없으면 첫 신고이므로, 새로 저장
         report.setMemberEmail(targetMember);
         Report savedReport = reportRepository.save(report);

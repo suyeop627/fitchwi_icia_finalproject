@@ -118,16 +118,18 @@ public class MemberController {
 
   //카카오 로그인
   @GetMapping("/login/kakao/callback")
-  public Map<String, Object> kakaoLogin(@RequestParam String code, HttpSession session) {
+  public Map<String, Object> kakaoLogin(@RequestParam String code) {
     log.info("memberController.kakaoLogin");
-    return  memberService.registerOrLogin(code, session);
+    return  memberService.registerOrLogin(code);
   }
 
   //카카오 로그아웃
   @PostMapping("/logout")
-  public String logoutMember( HttpSession session ){
+  public String logoutMember(@RequestBody String accessToken ){
     log.info("memberController.logoutMember");
-    return memberService.logoutMember( session);
+    log.info(accessToken);
+    System.out.println("accessToken = " + accessToken);
+    return memberService.logoutMember(accessToken);
   }
 
   //전화번호로 회원 정보 존재유무 확인

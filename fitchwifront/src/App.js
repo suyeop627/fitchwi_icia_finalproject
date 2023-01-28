@@ -82,7 +82,16 @@ function App() {
   };
   //로그아웃
   const onLogout = () => {
-    axios.post("/logout", { data: { id: lstate.logid } });
+    const accessToken = sessionStorage.getItem("at");
+    if (accessToken !== null) {
+      //post로 단순 문자열을 담아 요청을 보낼 때, @RequestBody String xxx 로 받으면, 변수의 값에 '='이 붙는다.
+      //기본 content-type이 application/x-www-form-urlencoded 라서 발생하는 현상으로, 기본적으로 form데이터로 받기 때문.
+      //일반 문자열임을 나타내기 위해서 해더에  "Content-Type": "text/plain" 을 명시한다.
+      axios.post("/logout", accessToken, { headers: { "Content-Type": "text/plain" } }).catch((err) => {
+        swAlert("로그아웃 과정에 문제 발생", "warning");
+        return;
+      });
+    }
 
     /*
     //카카오 계정과 함께 로그아웃 시, 요청 URL.
@@ -102,7 +111,7 @@ function App() {
     sessionStorage.removeItem("id");
     sessionStorage.removeItem("nickName");
     sessionStorage.removeItem("mbti");
-    sessionStorage.removeItem("classification");
+    sessionStorage.removeItem("at");
     sessionStorage.removeItem("profileImg");
     swAlert("로그아웃이 완료됐습니다.", "success", () => {
       nav("/"); //로그아웃 이후 첫 페이지 이동.
@@ -124,14 +133,8 @@ function App() {
         <Route path="/talk/*" element={<Talk />}></Route>
         <Route path="/together/*" element={<Together />}></Route>
         <Route path="/search/*" element={<Search />}></Route>
-        <Route
-          path="/memberpage/*"
-          element={<MemberPage onLogout={onLogout} lstate={lstate} sucLogin={sucLogin} />}
-        ></Route>
-        <Route
-          path="/manager/*"
-          element={<Manager isManager={isManager} setIsManager={setIsManager} />}
-        ></Route>
+        <Route path="/memberpage/*" element={<MemberPage onLogout={onLogout} lstate={lstate} sucLogin={sucLogin} />}></Route>
+        <Route path="/manager/*" element={<Manager isManager={isManager} setIsManager={setIsManager} />}></Route>
         <Route path="/login/kakao/callback" element={<KaKaoLoginRedirect sucLogin={sucLogin} />}></Route>
       </Routes>
     </>

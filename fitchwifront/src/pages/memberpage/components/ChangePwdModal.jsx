@@ -82,10 +82,14 @@ export default function ChangePwdModal({ children, openChangePwd, setOpenChangeP
   const onChangePwd = (e) => {
     e.preventDefault();
     axios
+      //비밀번호 변경시, 기존 비밀번호의 일치여부 확인
       .post("/checkPwd", memberToCheck)
       .then((result) => {
+        //기존 비밀번호가 맞다면,
         if (result.data === "ok") {
+          //비밀번호 변경 절차 수행
           axios.put("/updatePwd", memberToChange).then((result) => {
+            //비밀번호 변경 성공
             if (result.data === "ok") {
               swAlert("비밀번호 변경이 완료됐습니다.");
               handleClose(true);
@@ -93,6 +97,7 @@ export default function ChangePwdModal({ children, openChangePwd, setOpenChangeP
               setCorrectPwd(null);
               setPwd("");
               setCurrentPwd("");
+              //기존 비밀번호와 일치
             } else if (result.data === "same") {
               swAlert("기존 비밀번호와 동일합니다.", "info");
               handleClose(true);
@@ -103,6 +108,7 @@ export default function ChangePwdModal({ children, openChangePwd, setOpenChangeP
             }
           });
         } else {
+          //기존 비밀번호가 틀렸을 경우
           swAlert("기존 비밀번호를 다시한번 확인하세요.", "warning");
           handleClose(true);
           setCheckPwd("");

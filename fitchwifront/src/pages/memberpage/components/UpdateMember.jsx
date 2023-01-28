@@ -66,12 +66,7 @@ export default function UpdateMember({ member, lstate, sucLogin, swAlert }) {
       .post("/updateMemberInfo", formData, config)
       .then((res) => {
         if (res.data !== null) {
-          sucLogin(
-            res.data.memberEmail,
-            res.data.memberNickname,
-            res.data.memberSaveimg,
-            res.data.memberMbti
-          );
+          sucLogin(res.data.memberEmail, res.data.memberNickname, res.data.memberSaveimg, res.data.memberMbti);
           sessionStorage.setItem("id", res.data.memberEmail);
           sessionStorage.setItem("nickName", res.data.memberNickname);
           sessionStorage.setItem("mbti", res.data.memberMbti);
@@ -93,24 +88,7 @@ export default function UpdateMember({ member, lstate, sucLogin, swAlert }) {
 
   //mbti 처리
   const [userMbTi, setUserMbti] = useState();
-  const options = [
-    "ISFP",
-    "ISTJ",
-    "ISFJ",
-    "INFJ",
-    "INTJ",
-    "ISTP",
-    "INFP",
-    "INTP",
-    "ESTP",
-    "ESFP",
-    "ENFP",
-    "ENTP",
-    "ESTJ",
-    "ESFJ",
-    "ENFJ",
-    "ENTJ",
-  ];
+  const options = ["ISFP", "ISTJ", "ISFJ", "INFJ", "INTJ", "ISTP", "INFP", "INTP", "ESTP", "ESFP", "ENFP", "ENTP", "ESTJ", "ESFJ", "ENFJ", "ENTJ"];
   useEffect(() => {
     setMemberToUpdate({
       ...memberToUpdate,
@@ -299,7 +277,7 @@ export default function UpdateMember({ member, lstate, sucLogin, swAlert }) {
     }
     axios
       .post("/checkPhone", memberToUpdate.memberPhone, {
-        headers: { "Content-Type": "test/plain" },
+        headers: { "Content-Type": "text/plain" },
       })
       .then((result) => {
         if (result.data === "fail") {
@@ -362,10 +340,7 @@ export default function UpdateMember({ member, lstate, sucLogin, swAlert }) {
         ) : (
           <>
             <Box>
-              <Avatar
-                src={file !== "" ? file : memberSaveimg}
-                sx={{ width: 150, height: 150, m: "auto", mb: 3, mt: 3 }}
-              />
+              <Avatar src={file !== "" ? file : memberSaveimg} sx={{ width: 150, height: 150, m: "auto", mb: 3, mt: 3 }} />
               <ButtonGroup>
                 <Button variant="outlined" sx={{ pl: 5 }}>
                   <FormControlLabel
@@ -402,7 +377,7 @@ export default function UpdateMember({ member, lstate, sucLogin, swAlert }) {
                     variant="standard"
                   />
                 </Grid>
-                {sessionStorage.getItem("classification") !== "k" ? (
+                {sessionStorage.getItem("at") === null ? (
                   <Grid item xs={12}>
                     <ChangePwdModal
                       swAlert={swAlert}

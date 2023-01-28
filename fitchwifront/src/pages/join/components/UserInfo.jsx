@@ -25,15 +25,12 @@ export default function UserInfo({ onChange, joinForm, setJoinForm, isKakao, swA
   const [disabled, setDisabled] = useState(true);
   const [correctPwd, setCorrectPwd] = useState(null);
   useEffect(() => {
+    //카카오 가입일 경우, 주소 입력, 인증된 전화번호와 전송할 비밀번호 비교 후, 버튼 활성화
     if (isKakao === true && joinForm.memberAddr !== "" && checkedPhone === joinForm.memberPhone) {
       setDisabled(false);
     } else {
-      if (
-        correctPwd === true && //비번같음
-        checkedId === joinForm.memberEmail &&
-        checkedPhone === joinForm.memberPhone &&
-        joinForm.memberAddr !== ""
-      ) {
+      //일반회원일 경우, 비밀번호 확인, 중복확인된 아이디, 인증된 비밀번호, 주소 입력 상태 확인 후 버튼 활성화.
+      if (correctPwd === true && checkedId === joinForm.memberEmail && checkedPhone === joinForm.memberPhone && joinForm.memberAddr !== "") {
         setDisabled(false);
       } else {
         setDisabled(true);
@@ -102,40 +99,38 @@ export default function UserInfo({ onChange, joinForm, setJoinForm, isKakao, swA
     if (joinForm.memberPhone === "") {
       return swAlert("연락처를 입력해주세요.", "warning");
     }
-    axios
-      .post("/checkPhone", joinForm.memberPhone, { headers: { "Content-Type": "test/plain" } })
-      .then((result) => {
-        if (result.data === "fail") {
-          swAlert("이미 등록된 전화번호입니다.", "warning");
-        } else {
-          const { IMP } = window;
-          // IMP.init("imp87001512");
+    //전화번호 중복 여부 확인
+    axios.post("/checkPhone", joinForm.memberPhone, { headers: { "Content-Type": "text/plain" } }).then((result) => {
+      if (result.data === "fail") {
+        swAlert("이미 등록된 전화번호입니다.", "warning");
+      } else {
+        const { IMP } = window;
 
-          IMP.init("imp10391932");
+        IMP.init("imp10391932");
 
-          const data = {
-            merchant_uid: `mid_${new Date().getTime()}`,
-            company: "아임포트",
-            carrier: "",
-            //name: joinForm.memberName,
-            phone: joinForm.memberPhone,
-          };
-          IMP.certification(data, callback);
+        const data = {
+          merchant_uid: `mid_${new Date().getTime()}`,
+          company: "아임포트",
+          carrier: "",
+          //name: joinForm.memberName,
+          phone: joinForm.memberPhone,
+        };
+        IMP.certification(data, callback);
 
-          function callback(response) {
-            // eslint-disable-next-line no-unused-vars
-            const { success, merchant_uid, error_msg } = response;
+        function callback(response) {
+          // eslint-disable-next-line no-unused-vars
+          const { success, merchant_uid, error_msg } = response;
 
-            if (success) {
-              setCheckedPhone(joinForm.memberPhone);
+          if (success) {
+            setCheckedPhone(joinForm.memberPhone);
 
-              swAlert("본인인증이 완료됐습니다.");
-            } else {
-              swAlert(`본인인증에 실패했습니다.<br/>: ${error_msg}`, "warning");
-            }
+            swAlert("본인인증이 완료됐습니다.");
+          } else {
+            swAlert(`본인인증에 실패했습니다.<br/>: ${error_msg}`, "warning");
           }
         }
-      });
+      }
+    });
   };
 
   const handlePhoneNumber = (e) => {
@@ -172,13 +167,7 @@ export default function UserInfo({ onChange, joinForm, setJoinForm, isKakao, swA
         {isKakao === true ? null : (
           <>
             <Grid item xs={12}>
-              <Button
-                variant="outlined"
-                fullWidth
-                style={{ width: "100%" }}
-                sx={{ mb: 1 }}
-                onClick={onCheckId}
-              >
+              <Button variant="outlined" fullWidth style={{ width: "100%" }} sx={{ mb: 1 }} onClick={onCheckId}>
                 중복확인
               </Button>{" "}
             </Grid>

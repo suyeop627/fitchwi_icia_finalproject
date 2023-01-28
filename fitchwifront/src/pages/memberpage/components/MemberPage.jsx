@@ -45,10 +45,9 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
   //메뉴 선택 후 해당 정보 조회
   const [myMenu, setMyMenu] = useState("share");
 
+  //회원의 활동 내역 조회
   const getMemberFeed = useCallback(() => {
-    axios
-      .get("/getMemberFeed", { params: { memberEmail: member.memberEmail } })
-      .then((res) => setFeedList(res.data));
+    axios.get("/getMemberFeed", { params: { memberEmail: member.memberEmail } }).then((res) => setFeedList(res.data));
   }, [member]);
 
   const getMemberTalk = useCallback(() => {
@@ -108,10 +107,16 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
   }
 
   //팔로우 관련
+
+  //팔로우 리스트를 저장할 state
   const [followList, setFollowList] = useState([]);
+  //팔로워 리스트를 저장할 state
   const [followerList, setFollowerList] = useState([]);
+
+  //로그인한 회원이 팔로우중인지 판단하기 위한 state->체크 박스의 상태를 true로 변경하는데 사용.
   const [isFollow, setIsFollow] = useState(false);
 
+  //마이페이지 랜더링 시, 팔로우 및 팔로워 목록 조회
   const getFollow = useCallback(() => {
     if (memberEmail !== undefined) {
       axios.get("/getFollowList", { params: { pageOwner: memberEmail } }).then((res) => {
@@ -121,6 +126,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
     }
   }, [memberEmail]);
 
+  //팔로워 중 로그인한 회원이 존재한다면, isFollow의 값을 true로 변경
   useEffect(() => {
     for (let i = 0; i < followerList.length; i++) {
       if (followerList[i].memberEmail === logid) {
@@ -133,16 +139,20 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
 
   const onFollow = useCallback(
     (isFollow) => {
+      //비로그인시, 로그인 후 이용 안내 문구 출력
       if (sessionStorage.getItem("id") == null) {
         swAlert("로그인이 필요한 서비스입니다..", "info");
         return;
       }
+      //팔로우 중이 아닐 경우, 팔로우 요청
       if (isFollow === false) {
         axios.get("/follow", { params: { loginId: logid, pageOwner: memberEmail } }).then((res) => {
           swAlert(`${memberNickname}님을 팔로우했습니다.`);
           setIsFollow(true);
         });
-      } else {
+      }
+      //팔로우중일 경우, 언팔로우 요청
+      else {
         axios
           .delete("/unfollow", {
             params: { loginId: logid, pageOwner: memberEmail, isFollow: isFollow },
@@ -157,21 +167,25 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
     [logid, memberEmail, memberNickname]
   );
 
+  //state가 변경될때마다 재실행 (로그인한 계정이 (언)팔로우를 할때마다 팔로우 목록 최신화),
   useEffect(() => {
     getFollow();
   }, [getFollow, isFollow]);
 
   //회원 탈퇴
   const [confirmOpen, setConfirmOpen] = useState(false);
+
   const deleteMemberInfo = useCallback(
     (member) => {
       axios
         .delete("/deleteMember", { data: member })
         .then((res) => {
-          // console.log(res.data);
           if (res.data === "ok") {
             sessionStorage.removeItem("id");
             sessionStorage.removeItem("nickName");
+            sessionStorage.removeItem("mbti");
+            sessionStorage.removeItem("at");
+            sessionStorage.removeItem("profileImg");
             swAlert("탈퇴 처리가 완료됐습니다.", "success", () => {
               onLogout();
               nav("/");
@@ -216,14 +230,8 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
   ]);
 
   return (
-    <Container
-      component="main"
-      sx={{ height: "100vh", display: "flex", mt: 3, justifyContent: "flex-start" }}
-    >
-      {memberSaveimg === undefined ||
-      feedList === undefined ||
-      followList === undefined ||
-      togetherJoinList === undefined ? (
+    <Container component="main" sx={{ height: "100vh", display: "flex", mt: 3, justifyContent: "flex-start" }}>
+      {memberSaveimg === undefined || feedList === undefined || followList === undefined || togetherJoinList === undefined ? (
         <Box
           style={{
             position: "absolute",
@@ -240,6 +248,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
             <List>
               <ListItem disablePadding>
                 <ListItemButton>
+                  {/* 메뉴 버튼 클릭 시, myMenu state의 값 변경. */}
                   <CenterListText primary="공유해요" onClick={() => setMyMenu("share")} />
                 </ListItemButton>
               </ListItem>
@@ -284,12 +293,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
                   </ListItem>
                   <Divider variant="middle" component="li" />
 
-                  <ConfirmDialog
-                    title="Fitchwi 회원 탈퇴"
-                    open={confirmOpen}
-                    setOpen={setConfirmOpen}
-                    onConfirm={() => deleteMemberInfo(member)}
-                  >
+                  <ConfirmDialog title="Fitchwi 회원 탈퇴" open={confirmOpen} setOpen={setConfirmOpen} onConfirm={() => deleteMemberInfo(member)}>
                     {`${member.memberName}(${member.memberEmail})님께서 Fitchwi에서 활동한 모든 기록이 삭제됩니다.
                   단, 진행 예정이 함께해요에 참여중일 경우에는 탈퇴가 불가능하며, 함께해요 취소를 먼저 진행해주세요. 
                   이에 동의하신다면 아래의 '탈퇴'버튼을 눌러주세요. `}
@@ -367,12 +371,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
                     logid === memberEmail ? (
                       <Typography sx={{ color: "#ffffffd6", ml: 1 }}>{memberEmail}</Typography>
                     ) : (
-                      <Report
-                        targetMember={member.memberEmail}
-                        category="memberpage"
-                        target="0"
-                        type="mypage"
-                      />
+                      <Report targetMember={member.memberEmail} category="memberpage" target="0" type="mypage" />
                     )
                   }
                 />
@@ -400,8 +399,10 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
                         : null}
                     </div>
                   </Grid>
+                  {/*팔로우 버튼 출력 부분*/}
                   {followList !== undefined ? (
                     <Grid item xs={3.8}>
+                      {/* 같은 컴포넌트를 사용하지만, prop으로 follow를 전달하는지, follower를 전달하는 지에 따라서 구분. */}
                       <FollowMemberListModal lstate={lstate} followList={followerList}>
                         팔로워 {followerList.length}
                       </FollowMemberListModal>
@@ -422,6 +423,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
                 </Grid>
               </CardContent>
             </Card>
+            {/* myMenu 값에 따라 랜더링할 컴포넌트 변경 */}
             {myMenu === "share" ? (
               <Box sx={{ mt: 2, width: "100%" }}>
                 <Typography variant="h6" gutterBottom>
@@ -436,12 +438,7 @@ export default function MemberPage({ member, onLogout, lstate, swAlert }) {
                   얘기해요
                 </Typography>
                 {talkJoinList !== undefined ? (
-                  <MemberTalk
-                    talkJoinList={talkJoinList}
-                    talkOpenedList={talkOpenedList}
-                    logid={logid}
-                    memberEmail={memberEmail}
-                  />
+                  <MemberTalk talkJoinList={talkJoinList} talkOpenedList={talkOpenedList} logid={logid} memberEmail={memberEmail} />
                 ) : null}
               </Box>
             ) : (

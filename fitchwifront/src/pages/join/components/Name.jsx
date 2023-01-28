@@ -14,6 +14,7 @@ export default function Name({ onChange, joinForm, isKakao, isValid, swAlert, lo
   });
 
   const [isDisabled, setIsDisabled] = useState(true);
+  //입력 조건 충족시 isDisabled를 false로 변경
   useEffect(() => {
     if (joinForm.memberName.length >= 2) {
       setIsDisabled(false);
@@ -21,6 +22,7 @@ export default function Name({ onChange, joinForm, isKakao, isValid, swAlert, lo
       setIsDisabled(true);
     }
   }, [joinForm.memberName]);
+
   return (
     <div style={{ textAlign: "center" }}>
       {isKakao === true ? (
@@ -46,6 +48,7 @@ export default function Name({ onChange, joinForm, isKakao, isValid, swAlert, lo
       />
       <br />
       <Link to="/join/gender" style={{ textDecoration: "none" }}>
+        {/* 조건을 충족하면 isDisabled를 false로 변경하여, 버튼을 활성화 시킨다. */}
         <Button sx={{ mt: 5, width: 100 }} variant="contained" disabled={isDisabled}>
           다음
         </Button>

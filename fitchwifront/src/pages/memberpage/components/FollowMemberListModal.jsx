@@ -17,7 +17,6 @@ const style = {
   p: 4,
 };
 
-
 export default function FollowMemberListModal({ children, followList, lstate }) {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
@@ -32,10 +31,7 @@ export default function FollowMemberListModal({ children, followList, lstate }) 
 
   return (
     <div>
-      <Typography
-        onClick={handleOpen}
-        sx={{ color: "black", display: "inline-block", fontSize: 14, mt: 1, cursor: "pointer" }}
-      >
+      <Typography onClick={handleOpen} sx={{ color: "black", display: "inline-block", fontSize: 14, mt: 1, cursor: "pointer" }}>
         {children}
       </Typography>
       <Modal
@@ -60,27 +56,17 @@ export default function FollowMemberListModal({ children, followList, lstate }) 
             {followList.map((member, index) => (
               <List key={index} sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}>
                 {member.memberSaveimg && (
-                  <Link
-                    to="/memberpage"
-                    state={{ memberId: member.memberEmail }}
-                    style={{ textDecoration: "none" }}
-                  >
+                  <Link to="/memberpage" state={{ memberId: member.memberEmail }} style={{ textDecoration: "none" }}>
                     {" "}
                     <ListItem alignItems="flex-start">
                       <ListItemAvatar>
-                        <Avatar
-                          sx={{ bgcolor: "orange" }}
-                          aria-label="recipe"
-                          src={member.memberSaveimg}
-                          onClick={handleClose}
-                        ></Avatar>
+                        <Avatar sx={{ bgcolor: "orange" }} aria-label="recipe" src={member.memberSaveimg} onClick={handleClose}></Avatar>
                       </ListItemAvatar>
                       <ListItemText
                         primary={
                           <Typography>
-                            {logid === member.memberEmail
-                              ? `${member.memberNickname}(나)`
-                              : `${member.memberNickname}`}
+                            {/* 로그인한 계정일 경우, 회원 닉네임 옆에 '(나)' 문구 출력 */}
+                            {logid === member.memberEmail ? `${member.memberNickname}(나)` : `${member.memberNickname}`}
                           </Typography>
                         }
                         secondary={interestArr[index].map((interest, index) => (

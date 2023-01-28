@@ -11,9 +11,6 @@ import { Alert, Box, Grid } from "@mui/material";
 
 import { useNavigate } from "react-router";
 import axios from "axios";
-//category : 함께해요-together / 얘기해요 - talk / 공유해요 - share / 회원 - memberpage / 댓글-comment
-//target : togerther / talk / feed /각 키값  //  회원신고는 target="0"
-//type : MenuItem으로 쓸거면 prop으로 MenuItem 전달 / 기본값은 버튼
 export default function FindMemberInfoModal({ swAlert }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
@@ -22,9 +19,8 @@ export default function FindMemberInfoModal({ swAlert }) {
     setOpen(true);
   };
 
-  const find = () => {};
-
   const [checkPhone, setCheckPhone] = useState(false);
+
   const [memberPhone, setMemberPhone] = useState("");
   const [memberInfo, setMemberInfo] = useState({
     memberEmail: "",
@@ -40,12 +36,6 @@ export default function FindMemberInfoModal({ swAlert }) {
     setMemberPhone(e.target.value);
   };
 
-  //휴대전화 인증 -> ok -> 아이디 알려주기 + 카카오인지 일반회원인지도 알려줘야함
-  //카카오회원 -> 로그인화면에서 카카오로그인을 이용해주세요
-  //일반회원 -> 비밀번호 새로 만들기
-  //1. 휴대전화 인증
-  //2. 아이디 알려주기
-  //3. 비밀번호 찾기
   const Certification = (e) => {
     e.preventDefault();
 
@@ -54,7 +44,6 @@ export default function FindMemberInfoModal({ swAlert }) {
     }
 
     const { IMP } = window;
-    // IMP.init("imp51345423");
 
     IMP.init("imp10391932");
 
@@ -70,14 +59,17 @@ export default function FindMemberInfoModal({ swAlert }) {
     function callback(response) {
       // eslint-disable-next-line no-unused-vars
       const { success, merchant_uid, error_msg } = response;
-
+      //연락처 인증이 성공할 경우,
       if (success) {
+        //랜더링할 컴포넌트를 바꾸는 조건이 되는 state의 값 변경
         setCheckPhone(true);
-
+        //연락처로 회원 정보 조회 요청
         axios.get("/getMemberByPhone", { params: { memberPhone: memberPhone } }).then((result) => {
+          //존재하지 않는 회원일 경우
           if (result.data[0] === "no data") {
             return;
           } else {
+            //카카오 회원일 경우
             if (result.data === "kakao") {
               setCheckPhone(true);
               const memberInfoObj = {
@@ -85,7 +77,9 @@ export default function FindMemberInfoModal({ swAlert }) {
                 memberEmail: result.data[1],
               };
               setMemberInfo(memberInfoObj);
-            } else {
+            }
+            //일반 회원일 경우
+            else {
               setCheckPhone(true);
               const memberInfoObj = {
                 kindOfMember: result.data[0],
@@ -110,13 +104,20 @@ export default function FindMemberInfoModal({ swAlert }) {
   const [isCorrectPwd, setIsCorrectPwd] = useState(null);
 
   useEffect(() => {
+    //비밀번호 길이 조건 검증
     if (pwd !== "" && (pwd.length < 8 || pwd.length > 20)) {
       setMsg("비밀번호를 8자 이상, 20자 이하로 설정해주세요.");
       setIsCorrectPwd(false);
-    } else {
+    }
+    //비밀번호가 입력된 경우
+    else {
+      //비밀번호 확인 입력 안내
       if (checkPwd === "" && pwd !== "") {
         setMsg("비밀번호 확인을 진행해주세요.");
-      } else if (checkPwd === pwd && pwd !== "") {
+      }
+      //비밀번호와 비밀번호 확인의 입력값이 일치
+      else if (checkPwd === pwd && pwd !== "") {
+        //버튼 활성화를 위한 state 변경.
         setIsCorrectPwd(true);
         setMsg("비밀번호 확인이 완료됐습니다.");
         const memberObj = {
@@ -124,7 +125,9 @@ export default function FindMemberInfoModal({ swAlert }) {
           memberPwd: pwd,
         };
         setMemberToChangePwd(memberObj);
-      } else if (checkPwd !== pwd) {
+      }
+      //비밀번호와 비밀번호 확인의 입력값이 다른 경우
+      else if (checkPwd !== pwd) {
         setIsCorrectPwd(false);
         setMsg("입력하신 두 비밀번호가 서로 다릅니다.");
         const memberObj = {
@@ -175,7 +178,7 @@ export default function FindMemberInfoModal({ swAlert }) {
         계정 찾기
       </Button>
 
-      <Dialog open={open} onClose={(e) => find(e)}>
+      <Dialog open={open}>
         <DialogTitle>계정찾기</DialogTitle>
         {checkPhone === false ? (
           <Box component="form" onSubmit={(e) => Certification(e)}>

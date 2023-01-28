@@ -32,20 +32,15 @@ const KaKaoLoginRedirect = ({ sucLogin, ...props }) => {
                 sucLogin(res.data.memberEmail, res.data.memberNickname, res.data.profileImg, res.data.mbti);
                 sessionStorage.setItem("id", res.data.memberEmail);
                 sessionStorage.setItem("nickName", res.data.memberNickname);
-                sessionStorage.setItem("classification", "k");
+                sessionStorage.setItem("at", res.data.accessToken);
                 sessionStorage.setItem("mbti", res.data.mbti);
                 sessionStorage.setItem("profileImg", res.data.profileImg);
-                swAlert(res.data.memberNickname + "님 환영합니다.", "success", () =>
-                  nav("/", { replace: true })
-                );
+                swAlert(res.data.memberNickname + "님 환영합니다.", "success", () => nav("/", { replace: true }));
 
                 break;
               case "reported":
-                swAlert(
-                  "누적된 신고에 의해, <br/> FITCHWI 이용이 불가합니다.<br/> 제한 해지일 :" +
-                    res.data.memberRestriction,
-                  "warning",
-                  () => nav("/", { replace: true })
+                swAlert("누적된 신고에 의해, <br/> FITCHWI 이용이 불가합니다.<br/> 제한 해지일 :" + res.data.memberRestriction, "warning", () =>
+                  nav("/", { replace: true })
                 );
 
                 break;
@@ -53,7 +48,7 @@ const KaKaoLoginRedirect = ({ sucLogin, ...props }) => {
                 sucLogin(res.data.memberEmail, res.data.memberNickname, res.data.profileImg, res.data.mbti);
                 sessionStorage.setItem("id", res.data.memberEmail);
                 sessionStorage.setItem("nickName", res.data.memberNickname);
-                sessionStorage.setItem("classification", "k");
+                sessionStorage.setItem("at", res.data.accessToken);
                 sessionStorage.setItem("mbti", res.data.mbti);
                 sessionStorage.setItem("profileImg", res.data.profileImg);
                 swAlert(res.data.memberRestriction + "부로 이용 제한이 해제됐습니다.", "info", () => {

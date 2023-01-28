@@ -4,7 +4,6 @@ import { Button, TextField, Typography } from "@mui/material";
 import { Link, useNavigate } from "react-router-dom";
 
 export default function Nickname({ onChange, joinForm, isValid, swAlert, location }) {
-  const [isDisabled, setIsDisabled] = useState(true);
   const nav = useNavigate();
 
   useEffect(() => {
@@ -14,7 +13,7 @@ export default function Nickname({ onChange, joinForm, isValid, swAlert, locatio
       });
     }
   });
-
+  const [isDisabled, setIsDisabled] = useState(true);
   useEffect(() => {
     if (joinForm.memberNickname !== undefined) {
       if (joinForm.memberNickname.length >= 2) {

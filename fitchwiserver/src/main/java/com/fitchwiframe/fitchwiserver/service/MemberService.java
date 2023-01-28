@@ -42,9 +42,199 @@ public class MemberService {
   private AdminService adminService;
   @Autowired
   private TogetherService togetherService;
-
-
   private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+  //카카오 로그인
+  //토큰 받기
+  public String getToken(String code) {
+    log.info("memberService.getToken()");
+//access token을 받기 위한 요청 만들기
+    //헤더
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded");
+
+    //바디
+    MultiValueMap<String, String> body = new LinkedMultiValueMap<>(); //Map vs MultiValueMap : key값의 중복 가능 여부.
+    //인가코드와 redireect_uri, rest_api key(client_id)를 body에 담기
+    body.add("grant_type", "authorization_code");
+    body.add("client_id", "bad1b060092a0ed86a3dfe34c2fb99f9");
+    body.add("redirect_uri", "http://localhost:3000/login/kakao/callback");
+    body.add("code", code);
+
+//위에서 만든 헤더와 바디 정보를 담은 httpEntity 생성
+    HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, httpHeaders);
+    RestTemplate restTemplate = new RestTemplate();
+    //카카오 개발자 사이트에서 지정한 형식에 맞춰 요청 보내고, 응답객체에 결과 받기
+    ResponseEntity<String> response = restTemplate.exchange("https://kauth.kakao.com/oauth/token", HttpMethod.POST, tokenRequest, String.class);
+
+    String accessToken = null;
+    try {
+      //응답받은 ResponseEntity에서 body정보를 가져오기.
+      String responseBody = response.getBody();
+      //ObjectMapper: JSON을 읽기, 쓰기, 변환 기능을 제공하는 객체
+      ObjectMapper objectMapper = new ObjectMapper();
+      //ObjectMapper로, 응답받은 body에서 'access_token'을 문자로 저장
+      accessToken = objectMapper.readTree(responseBody).get("access_token").asText();
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return accessToken;
+  }
+
+  //카카오 계정 정보 가져오기
+  public JsonNode getMemberInfoFromKaKao(String accessToken) {
+    log.info("memberService.getMemberInfoFromKaKao()");
+    //카카오 개발자 사이트에서 지정한 형식대로 헤더 정보 생성
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded");
+    httpHeaders.add("Authorization", "Bearer " + accessToken);
+
+//생성한 헤더정보를 담은 HttpEntity 생성
+    HttpEntity<MultiValueMap<String, String>> memberInfoRequest = new HttpEntity<>(httpHeaders);
+    RestTemplate restTemplate = new RestTemplate();
+    //카카오 개발자 사이트에서 지정한 형식대로 요청 보내고, response를 응답객체에 저장
+    ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.POST, memberInfoRequest, String.class);
+
+
+
+    /*
+    //JsonNode(key:value 형태로, 불변적이다. <-> objectNode는 가변적임)
+    path(), get()을 통해 key 값을 이용한 value 가져오기
+    asText(), asInt() 등의 메소드를 통해 형변환 가능
+    path()나 get()을 이용해 key값을 이용해 value 값을 가져올 수 있다.
+    참고로 get은 해당 값이 존재하지 않을 경우 null을 가져오므로 보통은 path를 자주 사용한다.
+    path()의 경우 null 대신 MissingNode를 반환한다.
+    */
+
+
+    JsonNode jsonNode = null;
+    try {
+      String responseBody = response.getBody();
+      ObjectMapper objectMapper = new ObjectMapper();
+      //objectMapper.readTree(JSON) : json을 jsonNode 객체로 변환
+      jsonNode = objectMapper.readTree(responseBody);
+
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
+    return jsonNode;
+  }
+
+  //카카오 로그인한 계정이 등록된 회원인지 아닌지 판단.
+  public Map<String, Object> registerOrLogin(String code) {
+    log.info("memberService.registerOrLogin()");
+    Map<String, Object> resultMap = new HashMap<>();
+    JsonNode jsonNode = null;
+    KakaoProfile kakaoProfile = null;
+    String accessToken = getToken(code);
+    try {
+      jsonNode = getMemberInfoFromKaKao(accessToken);
+
+      ObjectMapper objectMapper = new ObjectMapper();
+      //objectMapper.treeToValue(jsonNode, class) : jsonNode를 자바 객체로 변환
+      kakaoProfile = objectMapper.treeToValue(jsonNode, KakaoProfile.class);
+
+
+      Member member = new Member();
+      //카카오에서 받은 회원 이메일을 문자열로 저장
+      String memberEmail = kakaoProfile.getKakao_account().getEmail();
+
+      //해당 이메일이 db에 저장되어 있는지 확인
+      Optional<Member> optionalMember = memberRepository.findById(memberEmail);
+
+      //카카오 계정이 db에 저장된 회원일 경우.
+      if (optionalMember.isPresent()) {
+        Member dbMember = optionalMember.get();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        Date today = new Date();
+        Date restriction = null;
+        if (dbMember.getMemberRestriction() != null) { //로그인 제한이 걸려있는 회원일 경우.
+          restriction = dateFormat.parse(dbMember.getMemberRestriction());
+
+
+          if (restriction.compareTo(today) > 0) {//회원이지만, 로그인 제한 걸려있음
+            resultMap.put("isPresent", "ok");
+            resultMap.put("state", "reported");
+            resultMap.put("memberRestriction", dbMember.getMemberRestriction());
+
+          } else {//회원이며, 로그인 제한일이 지난 경우
+            resultMap.put("isPresent", "ok");
+            resultMap.put("state", "released");
+            resultMap.put("memberRestriction", dbMember.getMemberRestriction());
+            resultMap.put("memberEmail", dbMember.getMemberEmail());
+            resultMap.put("memberNickname", dbMember.getMemberNickname());
+            resultMap.put("mbti", dbMember.getMemberMbti());
+            resultMap.put("profileImg", dbMember.getMemberSaveimg());
+            resultMap.put("accessToken", accessToken);
+
+            //로그인 제한일을 null로 변경후 저장
+            dbMember.setMemberRestriction(null);
+            memberRepository.save(dbMember);
+          }
+          return resultMap;
+        }
+        //로그인 제한이 없으며, 로그인 가능
+        resultMap.put("isPresent", "ok");
+        resultMap.put("member", dbMember);
+        resultMap.put("state", "ok");
+        resultMap.put("memberEmail", dbMember.getMemberEmail());
+        resultMap.put("memberNickname", dbMember.getMemberNickname());
+        resultMap.put("mbti", dbMember.getMemberMbti());
+        resultMap.put("profileImg", dbMember.getMemberSaveimg());
+        resultMap.put("accessToken", accessToken);
+
+        return resultMap;
+      }
+      //저장된 회원 정보가 없는 경우, 회원 가입에 활용될 정보를 담아 반환.
+      member.setMemberEmail(kakaoProfile.getKakao_account().getEmail());
+      member.setMemberNickname(kakaoProfile.getProperties().getNickname());
+      member.setMemberImg(kakaoProfile.getProperties().getProfile_image());
+      member.setMemberSaveimg(kakaoProfile.getProperties().getProfile_image());
+      resultMap.put("isPresent", "no");
+      resultMap.put("member", member);
+      return resultMap;
+    } catch (Exception e) {
+      e.printStackTrace();
+
+      resultMap.put("isPresent", "fail");
+      resultMap.put("member", new Member());
+      return resultMap;
+
+    }
+  }
+
+  //카카오 회원 로그아웃
+  public String logoutMember(String accessToken) {
+    String result = "fail";
+
+
+//카카오에 로그아웃 요청을 위한 헤더 정보 생성
+    HttpHeaders httpHeaders = new HttpHeaders();
+    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded");
+    httpHeaders.add("Authorization", "Bearer " + accessToken);
+
+//httpEntity에 헤더 정보 담기
+    HttpEntity<MultiValueMap<String, String>> memberInfoRequest = new HttpEntity<>(httpHeaders);
+    System.out.println("memberInfoRequest = " + memberInfoRequest);
+    RestTemplate restTemplate = new RestTemplate();
+
+    //카카오에서 지정한 형식대로 로그아웃 요청 보내기
+    ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v1/user/logout", HttpMethod.POST, memberInfoRequest, String.class);
+
+//로그아웃 요청에 대한 응답이 200일 경우, 로그아웃 처리 완료
+    if (response.getStatusCode().equals(HttpStatus.OK)) {
+      System.out.println("카카오 로그아웃");
+      result = "ok";
+    }
+
+
+    return result;
+  }
 
 
   //회원가입
@@ -223,7 +413,7 @@ public class MemberService {
       adminService.deleteAllByMember(member);
 
 
-//팔로워내역 삭제
+      //팔로워내역 삭제
       List<Follow> allByFollowId = followRepository.findAllByFollowId(member.getMemberEmail());
       if (!(allByFollowId.isEmpty())) {
         followRepository.deleteAll(allByFollowId);
@@ -234,8 +424,7 @@ public class MemberService {
         followRepository.deleteAll(allByMemberEmail);
       }
 
-
-//회원 프로필 사진 삭제
+      //회원 프로필 사진 삭제
       deleteFile(member.getMemberSaveimg(), session);
       memberRepository.deleteById(member.getMemberEmail());
       result = "ok";
@@ -455,200 +644,6 @@ public class MemberService {
     }
 
     return updatedMember;
-  }
-
-  //카카오 로그인
-  //토큰 받기
-  public String getToken(String code) {
-
-//access token을 받기 위한 요청 만들기
-    //헤더
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-
-    //바디
-    MultiValueMap<String, String> body = new LinkedMultiValueMap<>(); //Map vs MultiValueMap : key값의 중복 가능 여부.
-    //인가코드와 redireect_uri, rest_api key(client_id)를 body에 담기
-    body.add("grant_type", "authorization_code");
-    body.add("client_id", "bad1b060092a0ed86a3dfe34c2fb99f9");
-    body.add("redirect_uri", "http://localhost:3000/login/kakao/callback");
-    body.add("code", code);
-
-//위에서 만든 헤더와 바디 정보를 담은 httpEntity 생성
-    HttpEntity<MultiValueMap<String, String>> tokenRequest = new HttpEntity<>(body, httpHeaders);
-    RestTemplate restTemplate = new RestTemplate();
-    //카카오 개발자 사이트에서 지정한 형식에 맞춰 요청 보내고, 응답객체에 결과 받기
-    ResponseEntity<String> response = restTemplate.exchange("https://kauth.kakao.com/oauth/token", HttpMethod.POST, tokenRequest, String.class);
-
-    String accessToken = null;
-    try {
-      //응답받은 ResponseEntity에서 body정보를 가져오기.
-      String responseBody = response.getBody();
-      //ObjectMapper: JSON을 읽기, 쓰기, 변환 기능을 제공하는 객체
-      ObjectMapper objectMapper = new ObjectMapper();
-      //ObjectMapper로, 응답받은 body에서 'access_token'을 문자로 저장
-      accessToken = objectMapper.readTree(responseBody).get("access_token").asText();
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return accessToken;
-  }
-
-  //카카오 계정 정보 가져오기
-  public JsonNode getMemberInfoFromKaKao(String accessToken) {
-    //카카오 개발자 사이트에서 지정한 형식대로 헤더 정보 생성
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-    httpHeaders.add("Authorization", "Bearer " + accessToken);
-
-//생성한 헤더정보를 담은 HttpEntity 생성
-    HttpEntity<MultiValueMap<String, String>> memberInfoRequest = new HttpEntity<>(httpHeaders);
-    RestTemplate restTemplate = new RestTemplate();
-    //카카오 개발자 사이트에서 지정한 형식대로 요청 보내고, response를 응답객체에 저장
-    ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v2/user/me", HttpMethod.POST, memberInfoRequest, String.class);
-
-
-
-    /*
-    //JsonNode(key:value 형태로, 불변적이다. <-> objectNode는 가변적임)
-    path(), get()을 통해 key 값을 이용한 value 가져오기
-    asText(), asInt() 등의 메소드를 통해 형변환 가능
-    path()나 get()을 이용해 key값을 이용해 value 값을 가져올 수 있다.
-    참고로 get은 해당 값이 존재하지 않을 경우 null을 가져오므로 보통은 path를 자주 사용한다.
-    path()의 경우 null 대신 MissingNode를 반환한다.
-    */
-
-
-    JsonNode jsonNode = null;
-    try {
-      String responseBody = response.getBody();
-      ObjectMapper objectMapper = new ObjectMapper();
-      //objectMapper.readTree(JSON) : json을 jsonNode 객체로 변환
-      jsonNode = objectMapper.readTree(responseBody);
-
-
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-
-    return jsonNode;
-  }
-
-  //카카오 로그인한 계정이 등록된 회원인지 아닌지 판단.
-  public Map<String, Object> registerOrLogin(String code, HttpSession session) {
-    Map<String, Object> resultMap = new HashMap<>();
-    JsonNode jsonNode = null;
-    KakaoProfile kakaoProfile = null;
-    String accessToken = getToken(code);
-    try {
-      jsonNode = getMemberInfoFromKaKao(accessToken);
-
-      ObjectMapper objectMapper = new ObjectMapper();
-      //objectMapper.treeToValue(jsonNode, class) : jsonNode를 자바 객체로 변환
-      kakaoProfile = objectMapper.treeToValue(jsonNode, KakaoProfile.class);
-
-
-      Member member = new Member();
-      //카카오에서 받은 회원 이메일을 문자열로 저장
-      String memberEmail = kakaoProfile.getKakao_account().getEmail();
-
-      //해당 이메일이 db에 저장되어 있는지 확인
-      Optional<Member> optionalMember = memberRepository.findById(memberEmail);
-
-      //카카오 계정이 db에 저장된 회원일 경우.
-      if (optionalMember.isPresent()) {
-        Member dbMember = optionalMember.get();
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        Date today = new Date();
-        Date restriction = null;
-        if (dbMember.getMemberRestriction() != null) { //로그인 제한이 걸려있는 회원일 경우.
-          restriction = dateFormat.parse(dbMember.getMemberRestriction());
-
-
-          if (restriction.compareTo(today) > 0) {//회원이지만, 로그인 제한 걸려있음
-            resultMap.put("isPresent", "ok");
-            resultMap.put("state", "reported");
-            resultMap.put("memberRestriction", dbMember.getMemberRestriction());
-
-          } else {//회원이며, 로그인 제한일이 지난 경우
-            resultMap.put("isPresent", "ok");
-            resultMap.put("state", "released");
-            resultMap.put("memberRestriction", dbMember.getMemberRestriction());
-            resultMap.put("memberEmail", dbMember.getMemberEmail());
-            resultMap.put("memberNickname", dbMember.getMemberNickname());
-            resultMap.put("mbti", dbMember.getMemberMbti());
-            resultMap.put("profileImg", dbMember.getMemberSaveimg());
-            session.setAttribute("at", accessToken);
-
-            //로그인 제한일을 null로 변경후 저장
-            dbMember.setMemberRestriction(null);
-            memberRepository.save(dbMember);
-          }
-          return resultMap;
-        }
-        //로그인 제한이 없으며, 로그인 가능
-        resultMap.put("isPresent", "ok");
-        resultMap.put("member", dbMember);
-        resultMap.put("state", "ok");
-        resultMap.put("memberEmail", dbMember.getMemberEmail());
-        resultMap.put("memberNickname", dbMember.getMemberNickname());
-        resultMap.put("mbti", dbMember.getMemberMbti());
-        resultMap.put("profileImg", dbMember.getMemberSaveimg());
-        session.setAttribute("at", accessToken);
-
-        return resultMap;
-      }
-      //저장된 회원 정보가 없는 경우, 회원 가입에 활용될 정보를 담아 반환.
-      member.setMemberEmail(kakaoProfile.getKakao_account().getEmail());
-      member.setMemberNickname(kakaoProfile.getProperties().getNickname());
-      member.setMemberImg(kakaoProfile.getProperties().getProfile_image());
-      member.setMemberSaveimg(kakaoProfile.getProperties().getProfile_image());
-      resultMap.put("isPresent", "no");
-      resultMap.put("member", member);
-      return resultMap;
-    } catch (Exception e) {
-      e.printStackTrace();
-
-      resultMap.put("isPresent", "fail");
-      resultMap.put("member", new Member());
-      return resultMap;
-
-    }
-  }
-
-  //카카오 회원 로그아웃
-  public String logoutMember(HttpSession session) {
-    String result = "fail";
-    String accessToken = (String) session.getAttribute("at");
-    //카카오회원이 아닐경우 이하 처리 하지 않고 return
-    if (accessToken == null) {
-      result = "ok";
-      return result;
-    }
-//카카오에 로그아웃 요청을 위한 헤더 정보 생성
-    HttpHeaders httpHeaders = new HttpHeaders();
-    httpHeaders.add("Content-Type", "application/x-www-form-urlencoded;charset=utf-8");
-    httpHeaders.add("Authorization", "Bearer " + accessToken);
-
-//httpEntity에 헤더 정보 담기
-    HttpEntity<MultiValueMap<String, String>> memberInfoRequest = new HttpEntity<>(httpHeaders);
-    RestTemplate restTemplate = new RestTemplate();
-
-    //카카오에서 지정한 형식대로 로그아웃 요청 보내기
-    ResponseEntity<String> response = restTemplate.exchange("https://kapi.kakao.com/v1/user/logout", HttpMethod.POST, memberInfoRequest, String.class);
-
-//로그아웃 요청에 대한 응답이 200일 경우, 로그아웃 처리 완료
-    if (response.getStatusCode().equals(HttpStatus.OK)) {
-      session.removeAttribute("at");
-
-      result = "ok";
-    }
-
-
-    return result;
   }
 
 

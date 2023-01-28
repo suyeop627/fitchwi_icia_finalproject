@@ -12,9 +12,9 @@ import moment from "moment/moment";
 import axios from "axios";
 import { useNavigate } from "react-router";
 import Swal from "sweetalert2";
-//category : 얘기해요 - talk / 공유해요 - share / 회원 - memberpage 
+//category : 얘기해요 - talk / 공유해요 - share / 회원 - memberpage
 //target :  talk / feed /각 키값  //  회원신고는 target="0"
-//type : MenuItem으로 쓸거면 prop으로 MenuItem 전달 / 기본값은 버튼
+//type : MenuItem으로 쓸거면 prop으로 MenuItem 전달 / 기본값은 버튼 / mypage : 마이페이지 용 디자인의 버튼
 export default function Report({ targetMember, target, category, type }) {
   const [open, setOpen] = useState(false);
   const nav = useNavigate();
@@ -36,8 +36,10 @@ export default function Report({ targetMember, target, category, type }) {
     reportTarget: target,
     reportDetailList: reportDetail,
   });
-
+  //기 신고여부 판단을 위한 state
   const [isReported, setIsReported] = useState(false);
+
+  //sweet alert2 라이브러리 사용
   const swAlert = (html, icon = "success", func) => {
     Swal.fire({
       title: "알림",
@@ -48,6 +50,7 @@ export default function Report({ targetMember, target, category, type }) {
     }).then(func);
   };
   const handleClickOpen = () => {
+    //비로그인시 신고 불가
     if (reportDetail[0].memberEmail.memberEmail == null) {
       swAlert("로그인 후 이용 가능합니다.", "warning", () => {
         nav("/login");
@@ -55,7 +58,7 @@ export default function Report({ targetMember, target, category, type }) {
 
       return;
     }
-    axios
+    axios //기 신고여부 판단
       .get("/checkReported", {
         params: {
           user: reportForm.reportDetailList[0].memberEmail.memberEmail,
@@ -64,9 +67,11 @@ export default function Report({ targetMember, target, category, type }) {
         },
       })
       .then((res) => {
+        //이미 신고한 대상
         if (res.data === "reported") {
           setIsReported(true);
           setOpen(true);
+          //신고 가능
         } else if (res.data === "ok") {
           setOpen(true);
         } else {
@@ -77,14 +82,13 @@ export default function Report({ targetMember, target, category, type }) {
   const handleClose = () => {
     setOpen(false);
   };
+  //신고 데이터 전송
   const handleDeclration = (e) => {
     e.preventDefault();
 
     axios.post("/report", reportForm).then((result) => {
       if (result.data === "ok") {
-        swAlert(
-          "신고 접수가 완료됐습니다. <br/>소중한 의견 감사드리며,  <br/>더욱 건강한 FITCHWI가 되도록 노력하겠습니다."
-        );
+        swAlert("신고 접수가 완료됐습니다. <br/>소중한 의견 감사드리며,  <br/>더욱 건강한 FITCHWI가 되도록 노력하겠습니다.");
       } else {
         swAlert("신고 접수가 정상적으로 처리되지 않았습니다. <br/>잠시 후 다시 시도해주세요.", "warning");
       }
@@ -165,8 +169,7 @@ export default function Report({ targetMember, target, category, type }) {
                 이미 신고한 대상입니다.
               </DialogContentText>
               <DialogContentText color="black" mt={2}>
-                회원님의 소중한 의견을 주셔서 감사합니다. 빠른 시일 내, 신고내역을 검토한 뒤 적절한 조치를
-                취하도록 하겠습니다.
+                회원님의 소중한 의견을 주셔서 감사합니다. 빠른 시일 내, 신고내역을 검토한 뒤 적절한 조치를 취하도록 하겠습니다.
               </DialogContentText>
             </DialogContent>
             <DialogActions>
