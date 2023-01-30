@@ -1,33 +1,34 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Container,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-  Typography,
-} from "@mui/material";
+import { Box, Button, CircularProgress, Container, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { useCallback, useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import CalendarApp from "./CalendarApp";
 export default function EditFacilities({ swAlert }) {
+  //패러미터로 전달받은 시설 코드를 facilitiesCode 변수에 저장
   const { facilitiesCode } = useParams();
+
+  const nav = useNavigate();
+  //로딩 상태를 저장할 state
+  const [load, setLoad] = useState(false);
+
+  //시설 상세 조회
   const loadFacilities = useCallback(() => {
+    //응답 받기 전까지, 로딩중을 표시하기 위한 state
     setLoad(false);
+    //시설 코드로, 해당 시설 정보 요청
     axios.get(`/getFacilitiesInfo/${facilitiesCode}`).then((result) => {
+      //응답 결과 저장
       setNewFacilities(result.data);
+      //로딩 중 해제
       setLoad(true);
     });
   }, [facilitiesCode]);
+
   useEffect(() => {
     loadFacilities();
   }, [loadFacilities]);
 
+  //수정된 정보가 저장될 state
   const [newFacilities, setNewFacilities] = useState({
     facilitiesName: "",
     facilitiesManager: "",
@@ -37,14 +38,8 @@ export default function EditFacilities({ swAlert }) {
     facilitiesGrade: "",
   });
 
-  const {
-    facilitiesName,
-    facilitiesManager,
-    facilitiesPhone,
-    facilitiesPosition,
-    facilitiesPrice,
-    facilitiesGrade,
-  } = newFacilities;
+  //객체 분해
+  const { facilitiesName, facilitiesManager, facilitiesPhone, facilitiesPosition, facilitiesPrice, facilitiesGrade } = newFacilities;
 
   const onInputChange = (e) => {
     setNewFacilities({ ...newFacilities, [e.target.name]: e.target.value });
@@ -55,15 +50,19 @@ export default function EditFacilities({ swAlert }) {
 
     axios.put(`/updateFacilities/${facilitiesCode}`, newFacilities).then((res) => {
       if (res.data === "ok") {
-        swAlert("해당 시설의 수정된 정보가 <br/> 성공적으로 저장됐습니다.");
+        swAlert("해당 시설의 수정된 정보가 <br/> 성공적으로 저장됐습니다.", "success", () => {
+          // 수정 완료 알림 이후, 해당 시설의 상세페이지로 이동
+          nav(`/manager/facilities/getFacilitiesInfo/${facilitiesCode}`);
+        });
       } else {
         swAlert("수정된 정보를 저장하는데 실패했습니다.");
       }
     });
   };
-  const [load, setLoad] = useState(false);
+
   return (
     <Container component="main" sx={{ display: "flex", alignItems: "center" }}>
+      {/* 로딩 중일때 출력할 스피너 */}
       {load === false ? (
         <Box
           style={{
@@ -125,14 +124,7 @@ export default function EditFacilities({ swAlert }) {
                 />
                 <FormControl fullWidth>
                   <InputLabel id="demo-simple-select-label">제휴상태</InputLabel>
-                  <Select
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    name="facilitiesGrade"
-                    value={facilitiesGrade}
-                    label="Age"
-                    onChange={(e) => onInputChange(e)}
-                  >
+                  <Select name="facilitiesGrade" value={facilitiesGrade} label="Age" onChange={(e) => onInputChange(e)}>
                     <MenuItem value={"제휴"}>제휴</MenuItem>
                     <MenuItem value={"비제휴"}>비제휴</MenuItem>
                   </Select>
@@ -170,14 +162,7 @@ export default function EditFacilities({ swAlert }) {
           <Grid container spacing={1} justifyContent="space-around">
             <Grid item xs={4}>
               <Link to="/manager/facilities" style={{ textDecoration: "none" }}>
-                <Button
-                  align="center"
-                  color="info"
-                  type="button"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
+                <Button align="center" color="info" type="button" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                   뒤로가기
                 </Button>
               </Link>

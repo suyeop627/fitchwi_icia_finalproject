@@ -4,7 +4,7 @@ import SearchIcon from "@mui/icons-material/Search";
 export default function FacilitiesSearch({ keyword, setKeyword, loadFacilities }) {
   const onSearchFacilities = (e) => {
     e.preventDefault();
-
+    //시설 명 검색 시, 해당 검색어로 조회한 목록의 1페이지 출력.
     loadFacilities(1, keyword);
   };
   const onChangeToSearch = (e) => {
@@ -22,12 +22,7 @@ export default function FacilitiesSearch({ keyword, setKeyword, loadFacilities }
           onChange={(e) => onChangeToSearch(e)}
           endAdornment={
             <InputAdornment position="end">
-              <IconButton
-                type="submit"
-                aria-label="toggle password visibility"
-                onClick={(e) => onSearchFacilities(e)}
-                // onMouseDown={handleMouseDownPassword}
-              >
+              <IconButton type="submit" aria-label="toggle password visibility" onClick={(e) => onSearchFacilities(e)}>
                 <SearchIcon />
               </IconButton>
             </InputAdornment>

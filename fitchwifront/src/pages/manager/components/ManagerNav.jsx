@@ -30,6 +30,7 @@ function ManagerNav(props) {
     sessionStorage.removeItem("keyword");
   };
 
+  //창의 크기가 작아질 경우 출력할 메뉴(햄버거 버튼 클릭시 사이드 메뉴 출력)
   const drawer = (
     <Box onClick={handleDrawerToggle} sx={{ textAlign: "center" }}>
       <Typography variant="h6">
@@ -69,21 +70,11 @@ function ManagerNav(props) {
       <CssBaseline />
       <AppBar component="nav">
         <Toolbar>
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            edge="start"
-            onClick={handleDrawerToggle}
-            sx={{ mr: 2, display: { sm: "none" } }}
-          >
+          <IconButton color="inherit" aria-label="open drawer" edge="start" onClick={handleDrawerToggle} sx={{ mr: 2, display: { sm: "none" } }}>
             <MenuIcon />
           </IconButton>
-
-          <Typography
-            variant="h5"
-            component="div"
-            sx={{ display: { xs: "none", sm: "block" }, color: "white" }}
-          >
+          {/* 크기가 xs일 경우, display :none 처리.  */}
+          <Typography variant="h5" component="div" sx={{ display: { xs: "none", sm: "block" }, color: "white" }}>
             FITCHWI&nbsp;<sub style={{ fontSize: "14px" }}>Manager</sub>
           </Typography>
           <Box
@@ -92,6 +83,7 @@ function ManagerNav(props) {
               display: { xs: "none", sm: "block" },
             }}
           >
+            {/* 크기가 xs일 경우, display :none 처리.  */}
             <Box style={{ display: "flex", justifyContent: "space-evenly" }}>
               <Link to="/manager/facilities" style={{ textDecoration: "none", color: "white" }}>
                 <Typography onClick={() => removeSessionItem()}>시설관리</Typography>
@@ -107,6 +99,7 @@ function ManagerNav(props) {
         </Toolbar>
       </AppBar>
       <Box component="nav">
+        {/* 크기가 xs일 경우에만 출력  - 창 크기가 작아지면 Drawer로 메뉴 출력*/}
         <Drawer
           container={container}
           variant="temporary"
@@ -123,21 +116,11 @@ function ManagerNav(props) {
           {drawer}
         </Drawer>
       </Box>
-      {/* <Box component="main" sx={{ p: 3 }}>
-        <Toolbar />
-        <Typography>
-          Lorem ipsum dolor sit amet consectetur adipisicing elit. Similique unde fugit veniam eius,
-        </Typography>
-      </Box> */}
     </Box>
   );
 }
 
 ManagerNav.propTypes = {
-  /**
-   * Injected by the documentation to work in an iframe.
-   * You won't need it on your project.
-   */
   window: PropTypes.func,
 };
 

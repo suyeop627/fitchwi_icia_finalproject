@@ -22,6 +22,9 @@ import Swal from "sweetalert2";
 function App() {
   const nav = useNavigate();
 
+  //관리자인지 판별할 state
+  const [isManager, setIsManager] = useState(false);
+
   //로그인 상태를 저장하는 state
   const [lstate, setLstate] = useState({
     logid: "",
@@ -33,30 +36,37 @@ function App() {
 
   //실행 후 최초 1회, 세션스토리지에 저장된 회원 정보를 가져와서 로그인 상태저장 state에 저장.
   useEffect(() => {
-    const id = sessionStorage.getItem("id");
-    const nickName = sessionStorage.getItem("nickName");
-    const profileImg = sessionStorage.getItem("profileImg");
-    const mbti = sessionStorage.getItem("mbti");
-    ChannelService.boot({
-      pluginKey: "fd5d508e-cd29-47c6-bef9-76dd87ce2f1a",
-      memberId: id,
-      profile: {
-        name: nickName,
-        email: id,
-      },
-    });
+    //회원 계정 로그인일 경우, 챗봇 활성화 및 세션 스토리지에 저장된 회원정보로 로그인 상태 유지
+    if (isManager === false) {
+      const id = sessionStorage.getItem("id");
+      const nickName = sessionStorage.getItem("nickName");
+      const profileImg = sessionStorage.getItem("profileImg");
+      const mbti = sessionStorage.getItem("mbti");
 
-    if (id !== null) {
-      const newState = {
-        logid: id,
-        nickName: nickName,
-        profileImg: profileImg,
-        mbti: mbti,
-        flink: "/memberpage",
-      };
-      setLstate(newState);
+      ChannelService.boot({
+        pluginKey: "fd5d508e-cd29-47c6-bef9-76dd87ce2f1a",
+        memberId: id,
+        profile: {
+          name: nickName,
+          email: id,
+        },
+      });
+
+      if (id !== null) {
+        const newState = {
+          logid: id,
+          nickName: nickName,
+          profileImg: profileImg,
+          mbti: mbti,
+          flink: "/memberpage",
+        };
+        setLstate(newState);
+      }
+    } else {
+      //관리자 계정일 경우, 챗봇 숨기기
+      ChannelService.shutdown();
     }
-  }, []);
+  }, [isManager]);
 
   //로그인 성공 시 로그인 상태 변경.
   const sucLogin = useCallback((id, nickName, profileImg, mbti) => {
@@ -117,8 +127,6 @@ function App() {
       nav("/"); //로그아웃 이후 첫 페이지 이동.
     });
   };
-  //관리자인지 판별할 state
-  const [isManager, setIsManager] = useState(false);
 
   return (
     <>

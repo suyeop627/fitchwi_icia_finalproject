@@ -39,9 +39,8 @@ public class AdminService {
   //시설 목록 조회
   public Map<String, Object> getFacilitiesList(Integer pageNum, String keyword) {
     log.info("getFacilitiesList()");
-//    if (pageNum == null) {
-//      pageNum = 1;
-//    }
+
+    //한 페이지에 출력할 개수
     int listCount = 6;
     //facilitiesCode를 기준으로 내림차순, 6개씩 조회. -> facilitiesCode는 시설 저장시점의 밀리초로 저장되므로, 최신순 정렬됨.
     Pageable pageable = PageRequest.of((pageNum - 1), listCount, Sort.Direction.DESC, "facilitiesCode");
@@ -80,6 +79,19 @@ public class AdminService {
     try {
       //입력받은 시설 정보를 db에 저장
       facilitiesRepository.save(facilities);
+
+//            for(int i=0; i<=50; i++){
+//        Facilities f = new Facilities();
+//        f.setFacilitiesName("시설"+i);
+//        f.setFacilitiesPrice(1000);
+//        f.setFacilitiesPosition("경기도 시흥시");
+//        f.setFacilitiesManager("담당자" +i);
+//        f.setFacilitiesPhone("01012341234");
+//        f.setFacilitiesGrade("제휴");
+//        facilitiesRepository.save(f);
+//
+//      }
+
 
       result = "ok";
 
@@ -197,17 +209,17 @@ public class AdminService {
     String result = "fail";
     try {
       Facilities facilities = facilitiesRepository.findById(facilitiesCode).get();
-//해당 시설을 이용중인 함께해요 개설 목록 조회
+      //해당 시설을 이용중인 함께해요 개설 목록 조회
       List<TogetherOpened> togetherOpenedList = togetherOpenedRepository.findByFacilitiesCode(facilities);
 
-      //삭제하려는 날짜에 함께해요가 예정돼있는 지 확인
+      //1.삭제하려는 날짜에 함께해요가 예정돼있는 지 확인
       for (String noday : noDayToSend) {
 
-        //삭제하려는 이용 불가일을 이용중인 함께해요가 있을 경우, 삭제 불가.
+        //해당 시설에 예정된 함께해요 중, 삭제하려는 이용 불가일을 이용중인 함께해요가 있는지 확인
         for (TogetherOpened to : togetherOpenedList) {
           Together together = togetherRepository.findByTogetherOpenedCodeAndTogetherDate(to, noday);
 
-
+          //존재할 경우, 삭제 불가
           if (together != null) {
             result = "togetherExist";
             return result;
@@ -216,7 +228,7 @@ public class AdminService {
         }
       }
 
-//함께해요 예정일이 포함되지 않은 경우,
+      //2.함께해요 예정일이 포함되지 않은 경우,
 
       //해당 시설의 모든 이용 불가일 목록 조회
       List<Noday> allByFacilitiesCode = nodayRepository.findAllByFacilitiesCode(facilities);
@@ -247,6 +259,35 @@ public class AdminService {
     log.info(report.toString());
 
     try {
+
+
+
+//      for (int i = 1; i <= 45; i++) {
+//        if (i == 43) {
+//          break;
+//        }
+//        Report report1 = new Report();
+//        report1.setMemberEmail(memberRepository.findById("test20@test.com").get());
+//        report1.setReportCategory("memberpage");
+//        report1.setReportTarget(0L);
+//        reportRepository.save(report1);
+//
+//        ReportDetail reportDetail = new ReportDetail();
+//        reportDetail.setReportCode(report1);
+//        reportDetail.setMemberEmail(memberRepository.findById("test21@test.com").get());
+//        reportDetail.setReportDetailContent("내용" + i);
+//        reportDetail.setReportDetailDate("2023-01-01");
+//        reportDetailRepository.save(reportDetail);
+//      }
+
+
+
+
+
+
+
+
+
       //신고 대상 회원 정보 가져오기
       Member targetMember = memberRepository.findById(report.getMemberEmail().getMemberEmail()).get();
       //카테고리(마이페이지, 피드, 얘기해요), 신고대상(게시글의 기본키/회원 신고일 경우 0), 신고대상회원(이메일)이 일치하는 신고내역있는지 조회
@@ -332,11 +373,9 @@ public class AdminService {
   //신고 목록 조회
   public Map<String, Object> getReportList(Integer pageNum, String keyword) {
     log.info("adminService.getReportList()");
+    System.out.println("pageNum = " + pageNum);
+    System.out.println("keyword = " + keyword);
 
-
-    if (pageNum == null) {
-      pageNum = 1;
-    }
     int listCount = 8;
     Pageable pageable = PageRequest.of((pageNum - 1), listCount, Sort.Direction.DESC, keyword);
     Page<Report> result = reportRepository.findAll(pageable);
@@ -379,7 +418,7 @@ public class AdminService {
 
     String result = "fail";
     try {
-      //제제할 회원 조회
+      //제재할 회원 조회
       Member targetMember = memberRepository.findById(targetMemberEmail).get();
       //이용 제한일 저장
       targetMember.setMemberRestriction(restrictDate);
@@ -419,7 +458,7 @@ public class AdminService {
     try {
       //상태를 변경할 신고 내역 조회
       Report report = reportRepository.findById(reportCode).get();
-      //제제 종류에 따라서 처리상태 저장
+      //제재 종류에 따라서 처리상태 저장
       if (reportTreatment.equals("신고 대상 삭제")) {
         //게시글을 삭제한 경우
         report.setReportState(reportTreatment);

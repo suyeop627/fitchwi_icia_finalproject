@@ -10,7 +10,7 @@ import { Box } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router";
 
-export default function CheckMangerPwdModal({ setIsManager, swAlert }) {
+export default function CheckManagerModal({ setIsManager, swAlert }) {
   const [open, setOpen] = useState(true);
   const nav = useNavigate();
 
@@ -22,7 +22,7 @@ export default function CheckMangerPwdModal({ setIsManager, swAlert }) {
     setOpen(false);
     nav("/");
   };
-  const submitManagerPwd = (e) => {
+  const onCheckeManager = (e) => {
     e.preventDefault();
 
     axios
@@ -31,6 +31,7 @@ export default function CheckMangerPwdModal({ setIsManager, swAlert }) {
         switch (result.data) {
           case "ok":
             swAlert("관리자 확인이 완료됐습니다.");
+            //정상 로그인 시에만, isManager state를 true로 변경시킨다.
             setIsManager(true);
             break;
           case "wrong pwd":
@@ -47,8 +48,6 @@ export default function CheckMangerPwdModal({ setIsManager, swAlert }) {
         }
       })
       .catch((error) => console.log(error));
-
-    // setOpen(true);
   };
 
   const handleInput = (e) => {
@@ -63,7 +62,7 @@ export default function CheckMangerPwdModal({ setIsManager, swAlert }) {
     <Dialog open={open} onClose={(e) => handleClose(e)}>
       <DialogTitle>FITCHWI 관리자 인증</DialogTitle>
 
-      <Box component="form" onSubmit={submitManagerPwd}>
+      <Box component="form" onSubmit={onCheckeManager}>
         <DialogContent>
           <DialogContentText color="black" fontSize={20}>
             관리자 확인을 위해, 아이디와 비밀번호를 입력해주세요.

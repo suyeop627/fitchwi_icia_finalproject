@@ -1,8 +1,8 @@
 import { Box } from "@mui/material";
-import React, { useEffect } from "react";
+import React from "react";
 import { Route, Routes } from "react-router-dom";
 import Swal from "sweetalert2";
-import CheckMangerPwdModal from "./components/CheckMangerPwdModal";
+import CheckManagerModal from "./components/CheckManagerModal";
 import AddFacilities from "./components/facilities/AddFacilities";
 import EditFacilities from "./components/facilities/EditFacilities";
 import Facilities from "./components/facilities/Facilities";
@@ -23,30 +23,20 @@ export default function ManagerIndex({ setIsManager, isManager }) {
     }).then(func);
   };
 
-  // //관리자 로그인 막기
-  // useEffect(() => {
-  //   setIsManager(true);
-  // }, [setIsManager]);
-
   return (
     <Box>
       {isManager === false ? (
-        <CheckMangerPwdModal setIsManager={setIsManager} swAlert={swAlert} />
+        // 관리자로 로그인이 되지 않은경우엔, 로그인 모달 출력.
+        <CheckManagerModal setIsManager={setIsManager} swAlert={swAlert} />
       ) : (
+        // 로그인이 완료된 경우, 아래의 route로 접근이 가능하다.
         <div>
           <Routes>
             <Route path="/" element={<Manager swAlert={swAlert} />} />
-
             <Route path="/facilities" element={<Facilities swAlert={swAlert} />} />
             <Route path="/facilities/insertFacilities" element={<AddFacilities swAlert={swAlert} />} />
-            <Route
-              path="/facilities/updateFacilities/:facilitiesCode"
-              element={<EditFacilities swAlert={swAlert} />}
-            />
-            <Route
-              path="/facilities/getFacilitiesInfo/:facilitiesCode"
-              element={<ViewFacilities swAlert={swAlert} />}
-            />
+            <Route path="/facilities/updateFacilities/:facilitiesCode" element={<EditFacilities swAlert={swAlert} />} />
+            <Route path="/facilities/getFacilitiesInfo/:facilitiesCode" element={<ViewFacilities swAlert={swAlert} />} />
             <Route path="/report" element={<ReportManagement swAlert={swAlert} />} />
             <Route path="/togetherManagement" element={<TogeterManagement swAlert={swAlert} />} />
           </Routes>

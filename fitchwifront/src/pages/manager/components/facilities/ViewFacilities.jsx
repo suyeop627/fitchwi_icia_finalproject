@@ -33,14 +33,9 @@ export default function ViewFacilities({ swAlert }) {
     facilitiesGrade: "",
   });
 
-  const {
-    facilitiesName,
-    facilitiesManager,
-    facilitiesPhone,
-    facilitiesPosition,
-    facilitiesPrice,
-    facilitiesGrade,
-  } = facilities;
+  const { facilitiesName, facilitiesManager, facilitiesPhone, facilitiesPosition, facilitiesPrice, facilitiesGrade } = facilities;
+
+  //시설 상세 정보 조회
   const loadFacilities = useCallback(() => {
     setLoad(false);
     axios.get(`/getFacilitiesInfo/${facilitiesCode}`).then((result) => {
@@ -138,23 +133,13 @@ export default function ViewFacilities({ swAlert }) {
           <Grid container spacing={1} justifyContent="space-around">
             <Grid item xs={4}>
               <Link to="/manager/facilities" style={{ textDecoration: "none" }}>
-                <Button
-                  align="center"
-                  color="info"
-                  type="button"
-                  fullWidth
-                  variant="contained"
-                  sx={{ mt: 3, mb: 2 }}
-                >
+                <Button align="center" color="info" type="button" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                   뒤로가기
                 </Button>
               </Link>
             </Grid>
             <Grid item xs={4}>
-              <Link
-                to={`/manager/facilities/updateFacilities/${facilitiesCode}`}
-                style={{ textDecoration: "none" }}
-              >
+              <Link to={`/manager/facilities/updateFacilities/${facilitiesCode}`} style={{ textDecoration: "none" }}>
                 <Button align="center" type="button" fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
                   수정하기
                 </Button>
