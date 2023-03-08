@@ -143,4 +143,6 @@ MBTI를 활용하여 회원들에게 취미를 추천하고, 온라인 소통 �
 
 
 
+**메인페이지**
+![fitchwimain](https://user-images.githubusercontent.com/112303446/223621009-4e62deac-af73-4c46-a602-0678e329b621.png)
 
