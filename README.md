@@ -17,7 +17,6 @@
 + Back end - Java 11, Spring boot 2.7.6, JPA
 + Front end – React.js 18.2.0, Node.js 16.16.0
 + 버전관리 - GitHub
-+ 프로젝트 소개
 
 
 
