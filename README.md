@@ -11,7 +11,7 @@
 
 
 **개발도구**
-+ [ERD 설계](https://blog.naver.com/heavenly627/222955154321) – https://<h>www<h>.erdcloud.com
++ ERD 설계 – https://<h>www<h>.erdcloud.com
 + DB – MySQL, WorkBench
 + IDE – IntelliJ, Visual Studio Code
 + Back end - Java 11, Spring boot 2.7.6, JPA
@@ -35,7 +35,7 @@
 
 **개인 역할**
 
-1.로그인 [[상세]](https://blog.naver.com/heavenly627/222957166997)
+1.로그인
 ![로그인페이지](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/0c14913f-7453-487a-a851-c46bb7a842cc)
 
 &nbsp;1)일반회원 로그인 
@@ -54,7 +54,7 @@
 - 로그인 완료 시, sessionStorage에 아이디, 닉네임, 프로필 사진의 url, MBTI 정보를 저장
 - sessionStorage에 저장된 정보로 페이지의 헤더에 출력될 회원 정보 최신화
 
-2.회원가입 [[상세]](https://blog.naver.com/heavenly627/222959566287)
+2.회원가입
 ![회원가입](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/bac904ce-97ec-4161-9e9d-3d8a767444dc)
 
 &nbsp;1)일반 회원가입
@@ -68,7 +68,7 @@
 - 카카오에서 받은 이메일, 프로필이미지, 닉네임을 그대로 사용하며, 전화번호 인증이 완료된 경우에만 가입버튼 활성화
 - 입력받은 데이터가 DB에 저장된 후, 가입완료 처리
 
-3.마이페이지 [[상세]](https://blog.naver.com/heavenly627/222963684920)
+3.마이페이지
 ![마이페이지](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/1502ddc5-60e1-453b-8e8a-a344f98f8877)
 
 - sessionStorage에 저장된 회원 이메일과 비교하여, 해당 마이페이지가 로그인한 회원의 페이지인지 타 회원의 마이페이지인지 판단
@@ -114,12 +114,12 @@
 - 카카오 계정 회원일 경우, 아이디 안내 및 카카오 계정 로그인 안내
 - 일반회원일 경우, 아이디 안내 및 비밀번호 재설정이 가능하도록 처리.
 
-6.회원 탈퇴[[상세]](https://blog.naver.com/heavenly627/222962829959)
+6.회원 탈퇴
 
 - 회원 탈퇴시, 해당 회원 관련 데이터 모두 삭제
 - 단, 진행 예정인 함께해요가 있을 경우, 탈퇴가 불가하며, 회원이 직접 함께해요 취소 후 탈퇴를 진행하도록 안내.
 
-7.팔로우 [[상세]](https://blog.naver.com/heavenly627/222964794692)
+7.팔로우
 
 - 마이페이지에서 팔로워 및 팔로우 수 출력
 - 팔로우 또는 팔로워 버튼 클릭 시, 해당 회원 목록 출력
@@ -130,7 +130,7 @@
 
 - 신고하기 버튼 클릭 시, 기 신고여부를 조회하여 중복 신고가 불가능 하도록 처리
 
-9.신고 관리 페이지 [[상세]](https://blog.naver.com/heavenly627/222976898089) 및 신고 대상 처리 [[상세]](https://blog.naver.com/heavenly627/222979254635)
+9.신고 관리 페이지 및 신고 대상 처리
 ![신고 상세](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/69878787-3d96-4bd0-8b3f-5dab3599e74f)
 
 - 최근 등록 순으로, 8개씩 조회. 
@@ -140,7 +140,7 @@
 - 신고 대상이 유저일 경우, 로그인 제한일 부여
 - 신고 대상이 게시글일 경우, 게시글 삭제 가능
 
-10.시설 관리 페이지 [[상세]](https://blog.naver.com/heavenly627/222972903915) 및 시설 관리 기능 [[상세]](https://blog.naver.com/heavenly627/222973389583)
+10.시설 관리 페이지 및 시설 관리 기능
 ![시설 조회](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/4facfc39-f34c-43f4-ba22-6ec0e8cf43f6)
 
 - 시설 관리 페이지에서, 각 시설마다 수정, 삭제 버튼 출력 
@@ -148,7 +148,7 @@
 - 수정 및 상세 조회 페이지에서 해당 시설의 이용 불가능일 설정 가능하도록 처리
 - 시설 삭제시, 진행 예정인 함께해요가 존재할 경우 해당 시설 삭제 불가. 
 
-11.시설 이용 불가능일 [[상세]](https://blog.naver.com/heavenly627/222975614917)
+11.시설 이용 불가능일
 ![시설 상세](https://github.com/suyeop627/fitchwi_icia_finalproject/assets/112303446/d18ea84a-cbbb-450b-b7bf-598b4d06570d)
 
 - 이용 불가일은 달력 형식으로 출력하여 등록, 삭제, 조회가 가능하도록 처리 -> react calendar 라이브러리 사용.
