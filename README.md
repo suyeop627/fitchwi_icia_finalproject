@@ -1,4 +1,4 @@
-# FITCHWI (React와 Spring을 활용한 MVC 패턴의 웹 사이트)
+# FITCHWI
 ## [상세 포트폴리오 보러가기](https://crystal-bayberry-1c6.notion.site/FITCHWI-6cdadc98aebb4c65a9f657ea6e5d3007?pvs=4)
 
 
